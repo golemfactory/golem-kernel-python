@@ -22,7 +22,7 @@ async def prepare_activity(activity):
         commands.Deploy(),
         commands.Start(),
         commands.Run(f'echo "{SCRIPT}" > ttt.sh'),
-        commands.Run("nohup timeout 5 bash ttt.sh &"),
+        commands.Run("nohup bash ttt.sh &"),
     )
     try:
         await batch.wait(timeout=30)
@@ -58,12 +58,6 @@ async def main():
     async with golem:
         activity = await get_activity(golem)
         print(activity)
-        # batch = await activity.execute_commands(
-        #     commands.Run(['/usr/local/bin/python', 'shell.py', 'read'])
-        # )
-        # await batch.wait(timeout=10)
-        # print(batch.events)
-
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
