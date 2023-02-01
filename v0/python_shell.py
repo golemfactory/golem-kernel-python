@@ -1,4 +1,6 @@
 import asyncio
+import sys
+import shlex
 
 from golem_core import commands, GolemNode, Payload
 from golem_core.mid import (
@@ -23,11 +25,7 @@ async def prepare_activity(activity):
         commands.Start(),
         commands.Run('nohup python shell.py run > /dev/null &'),
     )
-    try:
-        await batch.wait(timeout=30)
-    finally:
-        print(batch.events)
-
+    await batch.wait(timeout=30)
     return activity
 
 async def get_activity(golem):
@@ -44,17 +42,39 @@ async def get_activity(golem):
     )
     return await chain.__anext__()
 
+async def console_read(activity):
+    batch = await activity.execute_commands(
+        commands.Run('python shell.py read')
+    )
+    await batch.wait(timeout=5)
+    return(batch.events[-1].stdout.strip())
+
+async def console_write(activity, input_):
+    input_ = shlex.quote(input_)
+    batch = await activity.execute_commands(
+        commands.Run(f'echo {input_} |python shell.py write'),
+    )
+    await batch.wait(timeout=5)
+
+async def async_stdin_reader():
+    loop = asyncio.get_event_loop()
+    reader = asyncio.StreamReader()
+    protocol = asyncio.StreamReaderProtocol(reader)
+    await loop.connect_read_pipe(lambda: protocol, sys.stdin)
+    return reader
+
 async def main():
     golem = GolemNode()
 
     async with golem:
         activity = await get_activity(golem)
-        print(activity)
-        batch = await activity.execute_commands(
-            commands.Run('python shell.py read')
-        )
-        await batch.wait(timeout=10)
-        print(batch.events[-1].stdout)
+        print("START", activity)
+        reader = await async_stdin_reader()
+        while True:
+            output = await console_read(activity)
+            print(output + ' ', end='', flush=True)
+            input_ = (await reader.readline()).decode().strip()
+            await console_write(activity, input_)
 
 
 if __name__ == '__main__':
