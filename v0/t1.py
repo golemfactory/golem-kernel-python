@@ -21,20 +21,12 @@ async def prepare_activity(activity):
     batch = await activity.execute_commands(
         commands.Deploy(),
         commands.Start(),
-        commands.Run(f'echo "{SCRIPT}" > ttt.sh'),
-        commands.Run("nohup timeout 5 bash ttt.sh &"),
+        commands.Run('nohup python shell.py run > /dev/null &'),
     )
     try:
         await batch.wait(timeout=30)
     finally:
-        await asyncio.sleep(3)
-        batch = await activity.execute_commands(
-            commands.Run("cat x"),
-        )
-        try:
-            await batch.wait(timeout=30)
-        finally:
-            print(batch.events[-1].stdout)
+        print(batch.events)
 
     return activity
 
@@ -58,11 +50,11 @@ async def main():
     async with golem:
         activity = await get_activity(golem)
         print(activity)
-        # batch = await activity.execute_commands(
-        #     commands.Run(['/usr/local/bin/python', 'shell.py', 'read'])
-        # )
-        # await batch.wait(timeout=10)
-        # print(batch.events)
+        batch = await activity.execute_commands(
+            commands.Run('python shell.py read')
+        )
+        await batch.wait(timeout=10)
+        print(batch.events[-1].stdout)
 
 
 if __name__ == '__main__':
