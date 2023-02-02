@@ -1,17 +1,18 @@
-from ipykernel.kernelbase import Kernel
 import asyncio
 
-class EchoKernel(Kernel):
-    implementation = 'Echo'
-    implementation_version = '1.0'
-    language = 'no-op'
-    language_version = '0.1'
+from ipykernel.kernelbase import Kernel
+
+class GolemKernel(Kernel):
+    implementation = 'GLMKernel'
+    implementation_version = '0.001'
+    language = 'python'
+    language_version = '3'
     language_info = {
-        'name': 'Any text',
-        'mimetype': 'text/plain',
-        'file_extension': '.txt',
+        'name': 'python',
+        'mimetype': 'text/x-python',
+        'file_extension': '.py',
     }
-    banner = "Echo kernel - as useful as a parrot"
+    banner = "GLM Kernel - your python lives in the Golem Network"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -59,8 +60,3 @@ class EchoKernel(Kernel):
             'payload': [],
             'user_expressions': {},
         }
-
-
-if __name__ == '__main__':
-    from ipykernel.kernelapp import IPKernelApp
-    IPKernelApp.launch_instance(kernel_class=EchoKernel)
