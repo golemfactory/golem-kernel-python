@@ -24,9 +24,12 @@ class Golem:
         self._loop = None
 
     async def execute(self, code):
-        await log("EXECUTE", code)
         remote_python = await self.remote_python()
-        return await remote_python.execute(code)
+        output = await remote_python.execute(code)
+
+        #   Last line is the prompt (>>>), removed here
+        output = "\n".join(output.splitlines()[:-1])
+        return output
 
     async def aclose(self):
         #   NOTE: We don't wait for invoices here.
