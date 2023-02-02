@@ -12,7 +12,7 @@ from .remote_python import RemotePython
 PAYLOAD = Payload.from_image_hash("f27375a678d22d6fb323026a08e8a0d1249a9edbff7236a0fa4c236b")
 
 async def log(*data):
-    line = " ".join(data) + "\n"
+    line = " ".join([str(x) for x in data]) + "\n"
     async with aiofiles.open("kernel.log", mode='a+') as f:
         await f.write(line)
 
@@ -21,6 +21,7 @@ class Golem:
         self._create_remote_python_lock = asyncio.Lock()
         self._golem_node = None
         self._remote_python = None
+        self._loop = None
 
     async def execute(self, code):
         await log("EXECUTE", code)
@@ -28,9 +29,15 @@ class Golem:
         return await remote_python.execute(code)
 
     async def aclose(self):
-        await log("shutdown start")
-        await asyncio.sleep(2)
-        await log("stopped")
+        #   NOTE: We don't wait for invoices here.
+        #         We could easily use golem_core.default_payment_manager.DefaultPaymentManager,
+        #         but this doesn't make much sense now - payments/invoices require some separate solution.
+        if self._golem_node is not None:
+            #   Q: Why this?
+            #   A: Current running loop is different than the loop that was running when GolemNode
+            #      was started. We must use the latter to stop the GolemNode.
+            fut = asyncio.run_coroutine_threadsafe(self._golem_node.aclose(), self._loop)
+            fut.result()
 
     async def remote_python(self):
         async with self._create_remote_python_lock:
@@ -39,6 +46,7 @@ class Golem:
         return self._remote_python
 
     async def _create_remote_python(self):
+        self._loop = asyncio.get_running_loop()
         self._golem_node = GolemNode()
         await self._golem_node.start()
         activity = await self._get_activity()
