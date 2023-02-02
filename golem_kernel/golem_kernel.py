@@ -34,3 +34,6 @@ class GolemKernel(Kernel):
             'payload': [],
             'user_expressions': {},
         }
+
+    async def do_shutdown(self, restart):
+        await self._golem.aclose()
