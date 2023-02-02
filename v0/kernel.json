@@ -1,2 +1,2 @@
 {"argv":["python","-m","golem_kernel", "-f", "{connection_file}"],
- "display_name":"Echo"}
+ "display_name":"Golem"}
