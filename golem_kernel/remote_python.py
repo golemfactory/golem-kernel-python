@@ -2,6 +2,7 @@ import shlex
 
 from golem_core import commands
 
+
 class RemotePython:
     def __init__(self, activity, *, start_timeout=300, batch_timeout=300):
         self.activity = activity
@@ -12,10 +13,21 @@ class RemotePython:
         batch = await self.activity.execute_commands(
             commands.Deploy(),
             commands.Start(),
-            commands.Run('nohup python shell.py run > /dev/null &'),
-            commands.Run('python shell.py read')
+            commands.Run('nohup python python_server.py > /dev/null 2>&1 &'),
         )
-        await batch.wait(timeout=self.start_timeout)
+        await batch.wait(timeout=100)
+
+        #   IMPORTANT: wait until the service starts
+        #   (FIXME: better implementation)
+        import asyncio
+        await asyncio.sleep(10)
+
+        batch = await self.activity.execute_commands(
+            commands.Run('python example_client.py'),
+        )
+        await batch.wait(timeout=10)
+        print(batch.events)
+
         return batch.events[-1].stdout.strip()
 
     async def execute(self, input_):

@@ -8,8 +8,13 @@ from golem_core.mid import (
 )
 
 from golem_kernel.remote_python import RemotePython
+from yapapi.payload import vm
 
-PAYLOAD = Payload.from_image_hash("f27375a678d22d6fb323026a08e8a0d1249a9edbff7236a0fa4c236b")
+PAYLOAD = Payload.from_image_hash(
+    "dc96c9862f48d2a3befef3792bf2ecaeada6a57b849dc87369648e54",
+    capabilities=[vm.VM_CAPS_VPN],
+)
+
 
 async def get_activity(golem):
     allocation = await golem.create_allocation(1)
@@ -36,13 +41,21 @@ async def main():
 
     async with golem:
         activity = await get_activity(golem)
+        print(activity)
         remote_python = RemotePython(activity)
-        reader = await async_stdin_reader()
-        output = await remote_python.start()
-        while True:
-            print(output + ' ', end='', flush=True)
-            input_ = (await reader.readline()).decode()
-            output = await remote_python.execute(input_)
+        provider_id = activity.parent.parent.data.issuer_id
+        try:
+            output = await remote_python.start()
+        except Exception as e:
+            print("BAD PROVIDER", provider_id, e)
+        else:
+            print("OK PROVIDER", provider_id)
+
+        return
+        # while True:
+        #     print(output + ' ', end='', flush=True)
+        #     input_ = (await reader.readline()).decode()
+        #     output = await remote_python.execute(input_)
 
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@ async def main():
             result = client.execute(code)
             await websocket.send(json.dumps(result))
 
-    async with websockets.serve(python_server, "localhost", 5000):
+    async with websockets.serve(python_server, "0.0.0.0", 5000):
         await asyncio.Future()
 
 
