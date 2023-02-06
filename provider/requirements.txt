@@ -1,2 +1,2 @@
-click==8.0.1
-pyzmq==22.1.0
+flask==2.2.2
+jupyter==1.0.0

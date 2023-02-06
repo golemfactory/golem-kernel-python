@@ -1,11 +1,13 @@
 import subprocess
 
+from flask import Flask, request
+
 from simple_client import SimpleClient
 
-KERNEL_NAME = 'python3'
+app = Flask(__name__)
 
 def start_kernel():
-    cmd = ["jupyter", "kernel", "--kernel", KERNEL_NAME]
+    cmd = ["jupyter", "kernel", "--kernel", "python3"]
     proc = subprocess.Popen(cmd, stderr=subprocess.PIPE)
 
     proc.stderr.readline()
@@ -14,12 +16,15 @@ def start_kernel():
     return connection_file_name
 
 
-connection_file_name = start_kernel()
-c = SimpleClient(connection_file_name)
+client = None
+@app.before_first_request
+def create_client():
+    connection_file_name = start_kernel()
+    global client
+    client = SimpleClient(connection_file_name)
 
-print(c.execute('a = "AAAAAAAA"'))
-print(c.execute('a'))
-print(c.execute('print(a)'))
-print(c.execute('print(a)\na'))
-print(c.execute('print("ZZ")\n1/0')['stdout'])
-print(c.execute('print("aa")\nfrom time import sleep\nsleep(2)\nprint("bb")'))
+
+@app.route("/execute", methods=["POST"])
+def execute():
+    code = request.get_json(force=True)['code']
+    return client.execute(code)
