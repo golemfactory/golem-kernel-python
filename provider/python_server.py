@@ -1,10 +1,9 @@
 import subprocess
-
-from flask import Flask, request
+import asyncio
+import websockets
+import json
 
 from simple_client import SimpleClient
-
-app = Flask(__name__)
 
 def start_kernel():
     cmd = ["jupyter", "kernel", "--kernel", "python3"]
@@ -16,15 +15,18 @@ def start_kernel():
     return connection_file_name
 
 
-client = None
-@app.before_first_request
-def create_client():
+async def main():
     connection_file_name = start_kernel()
-    global client
     client = SimpleClient(connection_file_name)
 
+    async def python_server(websocket):
+        async for code in websocket:
+            result = client.execute(code)
+            await websocket.send(json.dumps(result))
 
-@app.route("/execute", methods=["POST"])
-def execute():
-    code = request.get_json(force=True)['code']
-    return client.execute(code)
+    async with websockets.serve(python_server, "localhost", 5000):
+        await asyncio.Future()
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
