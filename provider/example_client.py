@@ -1,11 +1,15 @@
 import asyncio
 import websockets
+import sys
 
-async def hello():
-    async with websockets.connect("ws://127.0.0.1:5000") as websocket:
-        for i in range(10):
-            code = "a=7\nprint(a + 3)\na"
-            await websocket.send(code)
-            print(await websocket.recv())
+url = sys.argv[1]
 
-asyncio.run(hello())
+async def t1():
+    headers = {"Authorization": "Bearer 6f945361959c4888b614e5b6b448d49d"}
+    async with websockets.connect(url, extra_headers=headers) as websocket:
+        msg = "AAA"
+        await websocket.send(msg)
+        print("Message sent, waiting ...")
+        print(await websocket.recv())
+
+asyncio.run(t1())

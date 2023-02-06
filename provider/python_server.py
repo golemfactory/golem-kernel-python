@@ -16,13 +16,17 @@ def start_kernel():
 
 
 async def main():
-    connection_file_name = start_kernel()
-    client = SimpleClient(connection_file_name)
+    # connection_file_name = start_kernel()
+    # client = SimpleClient(connection_file_name)
+
+    # async def python_server(websocket):
+    #     async for code in websocket:
+    #         result = client.execute(code)
+    #         await websocket.send(json.dumps(result))
 
     async def python_server(websocket):
-        async for code in websocket:
-            result = client.execute(code)
-            await websocket.send(json.dumps(result))
+        async for msg in websocket:
+            await websocket.send(msg)
 
     async with websockets.serve(python_server, "0.0.0.0", 5000):
         await asyncio.Future()
