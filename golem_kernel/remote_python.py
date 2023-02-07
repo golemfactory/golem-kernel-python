@@ -20,12 +20,12 @@ class RemotePython:
             commands.Deploy(deploy_args),
             commands.Start(),
 
-            commands.SendFile('provider/python_server.py', '/ttt/python_server.py'),
-            commands.Run('cp /ttt/python_server.py /python_server/python_server.py'),
-            commands.SendFile('provider/example_client.py', '/ttt/example_client.py'),
-            commands.Run('cp /ttt/example_client.py /python_server/example_client.py'),
+            commands.SendFile('provider/server.py', '/ttt/server.py'),
+            commands.SendFile('provider/local_client.py', '/ttt/local_client.py'),
+            commands.Run('cp /ttt/server.py /python_server/server.py'),
+            commands.Run('cp /ttt/local_client.py /python_server/local_client.py'),
 
-            commands.Run('nohup python python_server.py > /dev/null 2>&1 &'),
+            commands.Run('nohup python server.py > /dev/null 2>&1 &'),
         )
         try:
             await batch.wait(timeout=100)
@@ -41,7 +41,7 @@ class RemotePython:
         await asyncio.sleep(10)
 
         batch = await self.activity.execute_commands(
-            commands.Run('python example_client.py "ws://localhost:5000"'),
+            commands.Run('python local_client.py'),
         )
         try:
             await batch.wait(timeout=10)
