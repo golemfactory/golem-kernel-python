@@ -27,7 +27,8 @@ async def get_activity(golem):
         Map(default_create_activity),
         Buffer(size=1),
     )
-    return await chain.__anext__()
+    async for activity in chain:
+        yield activity
 
 async def async_stdin_reader():
     loop = asyncio.get_event_loop()
@@ -40,18 +41,21 @@ async def main():
     golem = GolemNode()
 
     async with golem:
-        activity = await get_activity(golem)
-        print(activity)
-        remote_python = RemotePython(activity)
-        provider_id = activity.parent.parent.data.issuer_id
-        try:
-            output = await remote_python.start()
-        except Exception as e:
-            print("BAD PROVIDER", provider_id, e)
-        else:
-            print("OK PROVIDER", provider_id)
+        async for activity in get_activity(golem):
+            print(activity)
+            remote_python = RemotePython(activity)
+            try:
+                await remote_python.start()
+            except Exception as e:
+                print(f"{activity} failed on startup: {e}")
+            else:
+                break
+        
+        print("STARTUP SUCCESFUL")
+        print(await remote_python.execute('a = 7'))
+        print(await remote_python.execute('print(a)'))
+        print(await remote_python.execute('a + 7'))
 
-        return
         # while True:
         #     print(output + ' ', end='', flush=True)
         #     input_ = (await reader.readline()).decode()
