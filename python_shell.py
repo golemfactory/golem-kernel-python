@@ -50,16 +50,16 @@ async def main():
                 print(f"{activity} failed on startup: {e}")
             else:
                 break
-        
-        print("STARTUP SUCCESFUL")
-        print(await remote_python.execute('a = 7'))
-        print(await remote_python.execute('print(a)'))
-        print(await remote_python.execute('a + 7'))
 
-        # while True:
-        #     print(output + ' ', end='', flush=True)
-        #     input_ = (await reader.readline()).decode()
-        #     output = await remote_python.execute(input_)
+        reader = await async_stdin_reader()
+        while True:
+            print(">>> ", end='', flush=True)
+            input_ = (await reader.readline()).decode()
+            output = await remote_python.execute(input_)
+            if 'stdout' in output:
+                print(output['stdout'], flush=True)
+            if 'result' in output:
+                print("[RESULT] " + output['result'], flush=True)
 
 
 if __name__ == '__main__':

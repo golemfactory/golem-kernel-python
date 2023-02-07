@@ -1,6 +1,7 @@
 import asyncio
 import websockets
 from urllib.parse import urlparse
+import json
 
 from golem_core import commands
 
@@ -50,4 +51,5 @@ class RemotePython:
             raise RuntimeError("RemotePython didn't start succesfully")
 
         await self._ws.send(code.encode())
-        return (await self._ws.recv()).decode()
+        response = await self._ws.recv()
+        return json.loads(response.decode())
