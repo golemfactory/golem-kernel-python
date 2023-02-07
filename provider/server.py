@@ -19,14 +19,15 @@ def start_kernel():
     return connection_file_name
 
 def run_server():
-    connection_file_name = start_kernel()
-    client = SimpleClient(connection_file_name)
-
     while True:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((HOST, PORT))
             s.listen(1)
             conn, addr = s.accept()
+
+            connection_file_name = start_kernel()
+            client = SimpleClient(connection_file_name)
+
             with conn:
                 print('Connected by', addr)
                 while True:
