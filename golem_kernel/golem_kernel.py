@@ -22,11 +22,18 @@ class GolemKernel(Kernel):
     async def do_execute(
         self, code, silent, store_history=True, user_expressions=None, allow_stdin=False
     ):
-        result = await self._golem.execute(code)
+        output = await self._golem.execute(code)
 
         if not silent:
-            stream_content = {'name': 'stdout', 'text': result}
-            self.send_response(self.iopub_socket, 'stream', stream_content)
+            if 'stdout' in output:
+                stream_content = {'name': 'stdout', 'text': output['stdout']}
+                self.send_response(self.iopub_socket, 'stream', stream_content)
+            if 'result' in output:
+                execute_result_content = {
+                    'data': {'text/plain': output['result']},
+                    'execution_count': self.execution_count,
+                }
+                self.send_response(self.iopub_socket, 'execute_result', execute_result_content)
 
         return {
             'status': 'ok',

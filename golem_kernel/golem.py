@@ -6,10 +6,18 @@ from golem_core.mid import (
     Chain, Map, Buffer,
     default_negotiate, default_create_agreement, default_create_activity
 )
+from yapapi.payload import vm
 
 from .remote_python import RemotePython
 
-PAYLOAD = Payload.from_image_hash("f27375a678d22d6fb323026a08e8a0d1249a9edbff7236a0fa4c236b")
+
+PAYLOAD = Payload.from_image_hash(
+    "dc96c9862f48d2a3befef3792bf2ecaeada6a57b849dc87369648e54",
+    capabilities=[vm.VM_CAPS_VPN],
+)
+
+async def negotiate(proposal):
+    return await asyncio.wait_for(default_negotiate(proposal), timeout=5)
 
 async def log(*data):
     line = " ".join([str(x) for x in data]) + "\n"
@@ -24,11 +32,10 @@ class Golem:
         self._loop = None
 
     async def execute(self, code):
+        await log("EXECUTE", code)
         remote_python = await self.remote_python()
         output = await remote_python.execute(code)
-
-        #   Last line is the prompt (>>>), removed here
-        output = "\n".join(output.splitlines()[:-1])
+        await log("RESULT", output)
         return output
 
     async def aclose(self):
@@ -52,10 +59,18 @@ class Golem:
         self._loop = asyncio.get_running_loop()
         self._golem_node = GolemNode()
         await self._golem_node.start()
-        activity = await self._get_activity()
-        remote_python = RemotePython(activity)
-        await remote_python.start()
-        return remote_python
+
+        async for activity in self._get_activity():
+            await log(activity)
+            remote_python = RemotePython(activity)
+            try:
+                await asyncio.wait_for(remote_python.start(), timeout=100)
+                await log("CREATED REMOTE PYTHON")
+                return remote_python
+            except Exception as e:
+                await log("Startup failed", activity, e)
+                import traceback
+                await log(traceback.format_exc())
 
     async def _get_activity(self):
         golem = self._golem_node
@@ -65,9 +80,10 @@ class Golem:
 
         chain = Chain(
             demand.initial_proposals(),
-            Map(default_negotiate),
+            Map(negotiate),
             Map(default_create_agreement),
             Map(default_create_activity),
             Buffer(size=1),
         )
-        return await chain.__anext__()
+        async for activity in chain:
+            yield activity
