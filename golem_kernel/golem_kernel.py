@@ -32,6 +32,7 @@ class GolemKernel(Kernel):
                 execute_result_content = {
                     'data': {'text/plain': output['result']},
                     'execution_count': self.execution_count,
+                    'metadata': {},  # this is necessary for jupyterlab, but not jupyter notebook
                 }
                 self.send_response(self.iopub_socket, 'execute_result', execute_result_content)
 
