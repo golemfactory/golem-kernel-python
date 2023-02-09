@@ -12,7 +12,7 @@ from .remote_python import RemotePython
 
 
 PAYLOAD = Payload.from_image_hash(
-    "dc96c9862f48d2a3befef3792bf2ecaeada6a57b849dc87369648e54",
+    "d7593c383953da21ee265821de434b83de8f94a21a1a0e043af5be72",
     capabilities=[vm.VM_CAPS_VPN],
 )
 
@@ -39,6 +39,7 @@ class Golem:
         return output
 
     async def aclose(self):
+        await log("aclose")
         #   NOTE: We don't wait for invoices here.
         #         We could easily use golem_core.default_payment_manager.DefaultPaymentManager,
         #         but this doesn't make much sense now - payments/invoices require some separate solution.
@@ -60,7 +61,9 @@ class Golem:
         self._golem_node = GolemNode()
         await self._golem_node.start()
 
+        activity_cnt = 0
         async for activity in self._get_activity():
+            activity_cnt += 1
             await log(activity)
             remote_python = RemotePython(activity)
             try:
@@ -71,6 +74,10 @@ class Golem:
                 await log("Startup failed", activity, e)
                 import traceback
                 await log(traceback.format_exc())
+
+            #   FIXME
+            if activity_cnt > 2:
+                raise Exception("Failed to create a remote python")
 
     async def _get_activity(self):
         golem = self._golem_node

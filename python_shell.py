@@ -11,7 +11,7 @@ from golem_kernel.remote_python import RemotePython
 from yapapi.payload import vm
 
 PAYLOAD = Payload.from_image_hash(
-    "dc96c9862f48d2a3befef3792bf2ecaeada6a57b849dc87369648e54",
+    "d7593c383953da21ee265821de434b83de8f94a21a1a0e043af5be72",
     capabilities=[vm.VM_CAPS_VPN],
 )
 
