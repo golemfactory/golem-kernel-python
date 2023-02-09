@@ -12,7 +12,7 @@ from .remote_python import RemotePython
 
 
 PAYLOAD = Payload.from_image_hash(
-    "d7593c383953da21ee265821de434b83de8f94a21a1a0e043af5be72",
+    "701d57c13726afaf15bf8d602ce0710fc6119d0192507a220cef48d8",
     capabilities=[vm.VM_CAPS_VPN],
 )
 

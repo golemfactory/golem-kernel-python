@@ -27,8 +27,8 @@ class RemotePython:
             commands.Deploy(deploy_args),
             commands.Start(),
 
-            # commands.SendFile('provider/server.py', '/ttt/server.py'),
-            # commands.Run('cp /ttt/server.py /python_server/server.py'),
+            commands.SendFile('provider/server.py', '/ttt/server.py'),
+            commands.Run('cp /ttt/server.py /python_server/server.py'),
 
             commands.Run('nohup python server.py > /dev/null 2>&1 &'),
         )

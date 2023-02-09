@@ -35,7 +35,12 @@ def run_server():
                     if not code:
                         break
 
-                    result = client.execute(code)
+                    try:
+                        result = client.execute(code)
+                    except Exception as e:
+                        #   I'm not sure if this can ever happen, but just in case
+                        result = {'stdout': f"KERNEL CLIENT ERROR: {e}"}
+
                     conn.sendall(json.dumps(result).encode())
 
 

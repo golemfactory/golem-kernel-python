@@ -9,6 +9,9 @@ WORKDIR /python_server
 
 COPY requirements.txt .
 
+#   the only purpose of numpy here is demo
+RUN python3 -m pip install numpy
+
 RUN python3 -m pip install -r requirements.txt
 RUN rm requirements.txt
 
