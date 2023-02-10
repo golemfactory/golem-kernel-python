@@ -41,16 +41,32 @@ class Golem:
         self._remote_python = None
         self._loop = None
 
+    ####################
+    #   PUBLIC API
+    @property
+    def connected(self):
+        return self._remote_python is not None
+
     async def execute(self, code):
+        """Yields tuples (message, is_result).
+
+        This is not perfect, but good enough for a simple live updates (e.g. in %fund).
+        This will probably change in a significant way if we decide to pass raw messages
+        from the kernel.
+        """
         await log("EXECUTE", code)
 
-        if code == '%status':
-            result = self._execute_status()
+        if any(code.startswith(x) for x in ('%status', '%fund', '%budget', '%connect')):
+            try:
+                async for out in self._run_local_command(code):
+                    yield out
+            except Exception as e:
+                yield f"Error running a local command: {e}", False
+        elif not self.connected:
+            yield "Provider not connected", False
         else:
-            result = await self._execute_remote(code)
-
-        await log("RESULT", result)
-        return result
+            async for out in self._run_remote_command(code):
+                yield out
 
     async def aclose(self):
         await log("aclose")
@@ -66,7 +82,13 @@ class Golem:
 
     ##############
     #   LOCAL PART
-    def _execute_status(self):
+    async def _run_local_command(self, code):
+        if code == '%status':
+            yield self._get_status_text(), False
+        else:
+            raise ValueError(f"Unknown command: {code}")
+
+    def _get_status_text(self):
         id_data = json.loads(check_output(["yagna", "app-key", "list", "--json"]))
         rinkeby_data = json.loads(check_output(["yagna", "payment", "status", "--json", "--network", "rinkeby"]))
         polygon_data = json.loads(check_output(["yagna", "payment", "status", "--json", "--network", "polygon"]))
@@ -88,24 +110,30 @@ class Golem:
             "budget": self._get_budget_text(),
         }
 
-        return {'stdout': STATUS_TEMPLATE.format(**status_data)}
+        return STATUS_TEMPLATE.format(**status_data)
 
     def _get_budget_text(self):
         return "ZZZ"
 
     ###############
     #   REMOTE PART
+    async def _run_remote_command(self, code):
+        # yield "NO STDOUT", False
+        # yield "NO RESULT", True
+        # return
+
+        remote_python = await self.remote_python()
+        result = await remote_python.execute(code)
+        if "stdout" in result:
+            yield result["stdout"], False
+        if "result" in result:
+            yield result["result"], True
+
     async def remote_python(self):
         async with self._create_remote_python_lock:
             if self._remote_python is None:
                 self._remote_python = await self._create_remote_python()
         return self._remote_python
-
-    async def _execute_remote(self, code):
-        return {"stdout": "NOPE", "result": "NOPE"}
-        remote_python = await self.remote_python()
-        result = await remote_python.execute(code)
-        return result
 
     async def _create_remote_python(self):
         self._loop = asyncio.get_running_loop()

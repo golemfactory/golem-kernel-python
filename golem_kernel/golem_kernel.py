@@ -22,19 +22,20 @@ class GolemKernel(Kernel):
     async def do_execute(
         self, code, silent, store_history=True, user_expressions=None, allow_stdin=False
     ):
-        output = await self._golem.execute(code)
+        async for text, is_result in self._golem.execute(code):
+            if silent:
+                continue
 
-        if not silent:
-            if 'stdout' in output:
-                stream_content = {'name': 'stdout', 'text': output['stdout']}
-                self.send_response(self.iopub_socket, 'stream', stream_content)
-            if 'result' in output:
+            if is_result:
                 execute_result_content = {
-                    'data': {'text/plain': output['result']},
+                    'data': {'text/plain': text},
                     'execution_count': self.execution_count,
                     'metadata': {},  # this is necessary for jupyterlab, but not jupyter notebook
                 }
                 self.send_response(self.iopub_socket, 'execute_result', execute_result_content)
+            else:
+                stream_content = {'name': 'stdout', 'text': text}
+                self.send_response(self.iopub_socket, 'stream', stream_content)
 
         return {
             'status': 'ok',
