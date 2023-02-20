@@ -20,8 +20,8 @@ PAYLOAD = Payload.from_image_hash(
 
 STATUS_TEMPLATE = '''\
 Connected as node {id_}
-On Polygon[mainet]: {polygon_glm:.2f} GLM {polygon_gas:.4f} MATIC
-On Rinkeby[testnet]: {rinkeby_glm:.2f} tGLM {rinkeby_gas:.4f} tETH.
+{polygon_status}
+{rinkeby_status}
 
 {budget}
 '''
@@ -38,6 +38,7 @@ class Golem:
     def __init__(self):
         self._create_remote_python_lock = asyncio.Lock()
         self._golem_node = None
+        self._allocation = None
         self._remote_python = None
         self._loop = None
 
@@ -85,13 +86,19 @@ class Golem:
     async def _run_local_command(self, code):
         if code == '%status':
             yield self._get_status_text(), False
+        elif code == '%fund':
+            yield "Waiting for funds\n", False
+            self._get_funds()
+            yield self._get_network_status_text('rinkeby') + "\n", False
+            yield self._get_budget_text(), False
         else:
             raise ValueError(f"Unknown command: {code}")
 
+    def _get_funds(self):
+        check_output(["yagna", "payment", "fund"])
+
     def _get_status_text(self):
         id_data = json.loads(check_output(["yagna", "app-key", "list", "--json"]))
-        rinkeby_data = json.loads(check_output(["yagna", "payment", "status", "--json", "--network", "rinkeby"]))
-        polygon_data = json.loads(check_output(["yagna", "payment", "status", "--json", "--network", "polygon"]))
 
         app_key = GolemNode().app_key
         for el in id_data:
@@ -103,16 +110,27 @@ class Golem:
 
         status_data = {
             "id_": id_,
-            "rinkeby_glm": float(rinkeby_data["amount"]),
-            "rinkeby_gas": float(rinkeby_data["gas"]["balance"]),
-            "polygon_glm": float(polygon_data["amount"]),
-            "polygon_gas": float(polygon_data["gas"]["balance"]),
             "budget": self._get_budget_text(),
+            "polygon_status": self._get_network_status_text('polygon'),
+            "rinkeby_status": self._get_network_status_text('rinkeby'),
         }
 
         return STATUS_TEMPLATE.format(**status_data)
 
+    def _get_network_status_text(self, network):
+        if network == 'polygon':
+            template = 'On Polygon[mainet]: {glm:.2f} GLM {gas:.4f} MATIC'
+        elif network == 'rinkeby':
+            template = 'On Rinkeby[testnet]: {glm:.2f} tGLM {gas:.4f} tETH'
+        else:
+            return f"Unknown network: {network}"
+
+        data = json.loads(check_output(["yagna", "payment", "status", "--json", "--network", network]))
+        return template.format(glm=float(data["amount"]), gas=float(data["gas"]["balance"]))
+
     def _get_budget_text(self):
+        if self._allocation is None:
+            return "No budget defined!"
         return "ZZZ"
 
     ###############
