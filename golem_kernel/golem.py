@@ -36,7 +36,7 @@ async def log(*data):
 
 class Golem:
     def __init__(self):
-        self._create_remote_python_lock = asyncio.Lock()
+        self._connect_lock = asyncio.Lock()
         self._golem_node = None
         self._allocation = None
         self._remote_python = None
@@ -64,7 +64,7 @@ class Golem:
             except Exception as e:
                 yield f"Error running a local command: {e}", False
         elif not self.connected:
-            yield "Provider not connected", False
+            yield "Provider not connected. Available commands: %status, %fund, %budget, %connect.", False
         else:
             async for out in self._run_remote_command(code):
                 yield out
@@ -81,8 +81,6 @@ class Golem:
             fut = asyncio.run_coroutine_threadsafe(self._golem_node.aclose(), self._loop)
             fut.result()
 
-    ##############
-    #   LOCAL PART
     async def _run_local_command(self, code):
         if code == '%status':
             yield self._get_status_text()
@@ -101,11 +99,27 @@ class Golem:
             amount = float(amount)
             await self._create_allocation(network, amount)
             yield self._get_budget_text()
+        elif code.startswith('%connect'):
+            if not self._allocation:
+                yield self._get_budget_text()
+            elif self.connected:
+                yield "Already connected\n"
+                yield self._get_provider_text()
+            else:
+                yield "searching...\n"
+                offer_args = code.split()[1:]
+                async for out in self._connect(*offer_args):
+                    yield out
+                yield self._get_provider_text()
         else:
             raise ValueError(f"Unknown command: {code}")
 
-    def _get_funds(self, network):
-        check_call(["yagna", "payment", "fund", "--network", network])
+    async def _run_remote_command(self, code):
+        result = await self._remote_python.execute(code)
+        if "stdout" in result:
+            yield result["stdout"], False
+        if "result" in result:
+            yield result["result"], True
 
     def _get_status_text(self):
         id_data = json.loads(check_output(["yagna", "app-key", "list", "--json"]))
@@ -156,6 +170,14 @@ class Golem:
 
         return f"Allocated {amount} {currency} on {network}"
 
+    def _get_provider_text(self):
+        if not self._remote_python:
+            return "No provider connected"
+        return str(self.remote_python.activity)
+
+    def _get_funds(self, network):
+        check_call(["yagna", "payment", "fund", "--network", network])
+
     async def _create_allocation(self, network, amount):
         if self._allocation is not None:
             await self._allocation.release()
@@ -169,45 +191,31 @@ class Golem:
         self._allocation = await self._golem_node.create_allocation(amount, network)
         await self._allocation.get_data()
 
-    ###############
-    #   REMOTE PART
-    async def _run_remote_command(self, code):
-        # yield "NO STDOUT", False
-        # yield "NO RESULT", True
-        # return
+    async def _connect(self, *args):
+        async with self._connect_lock:
+            if self._remote_python is not None:
+                return
 
-        remote_python = await self.remote_python()
-        result = await remote_python.execute(code)
-        if "stdout" in result:
-            yield result["stdout"], False
-        if "result" in result:
-            yield result["result"], True
+            activity_cnt = 0
+            async for activity in self._get_activity():
+                yield f"Created {activity}, engine is starting ...\n"
+                activity_cnt += 1
+                await log(activity)
+                remote_python = RemotePython(activity)
+                try:
+                    await asyncio.wait_for(remote_python.start(), timeout=100)
+                    yield "Remote python is ready!"
+                    await log("CREATED REMOTE PYTHON")
+                    self._remote_python = remote_python
+                    return
+                except Exception as e:
+                    await log("Startup failed", activity, e)
+                    import traceback
+                    await log(traceback.format_exc())
 
-    async def remote_python(self):
-        async with self._create_remote_python_lock:
-            if self._remote_python is None:
-                self._remote_python = await self._create_remote_python()
-        return self._remote_python
-
-    async def _create_remote_python(self):
-
-        activity_cnt = 0
-        async for activity in self._get_activity():
-            activity_cnt += 1
-            await log(activity)
-            remote_python = RemotePython(activity)
-            try:
-                await asyncio.wait_for(remote_python.start(), timeout=100)
-                await log("CREATED REMOTE PYTHON")
-                return remote_python
-            except Exception as e:
-                await log("Startup failed", activity, e)
-                import traceback
-                await log(traceback.format_exc())
-
-            #   FIXME
-            if activity_cnt > 2:
-                raise Exception("Failed to create a remote python")
+                #   FIXME
+                if activity_cnt > 2:
+                    raise Exception("Failed to create a remote python")
 
     async def _get_activity(self):
         golem = self._golem_node
