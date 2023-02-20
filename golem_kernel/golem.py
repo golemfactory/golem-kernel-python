@@ -158,9 +158,7 @@ class Golem:
 
     async def _get_activity(self):
         golem = self._golem_node
-
-        allocation = await golem.create_allocation(1)
-        demand = await golem.create_demand(PAYLOAD, allocations=[allocation])
+        demand = await golem.create_demand(PAYLOAD, allocations=[self._allocation])
 
         chain = Chain(
             demand.initial_proposals(),
