@@ -96,6 +96,11 @@ class Golem:
             else:
                 yield self._get_network_status_text(network) + "\n"
                 yield self._get_budget_text()
+        elif code.startswith('%budget'):
+            network, amount = code.split()[1:]
+            amount = float(amount)
+            await self._create_allocation(network, amount)
+            yield self._get_budget_text()
         else:
             raise ValueError(f"Unknown command: {code}")
 
@@ -132,6 +137,7 @@ class Golem:
 
         template = 'On {network_full_name}: {glm:.2f} {curr} {gas:.4f} {gas_curr}'
         data = json.loads(check_output(["yagna", "payment", "status", "--json", "--network", network]))
+
         return template.format(
             network_full_name=network_full_name,
             glm=float(data["amount"]),
@@ -143,7 +149,25 @@ class Golem:
     def _get_budget_text(self):
         if self._allocation is None:
             return "No budget defined!"
-        return "ZZZ"
+
+        amount = self._allocation.data.remaining_amount
+        payment_platform = self._allocation.data.payment_platform
+        network, currency = payment_platform.split('-')[1:]
+
+        return f"Allocated {amount} {currency} on {network}"
+
+    async def _create_allocation(self, network, amount):
+        if self._allocation is not None:
+            await self._allocation.release()
+            self._allocation = None
+
+        if self._golem_node is None:
+            self._loop = asyncio.get_running_loop()
+            self._golem_node = GolemNode()
+            await self._golem_node.start()
+
+        self._allocation = await self._golem_node.create_allocation(amount, network)
+        await self._allocation.get_data()
 
     ###############
     #   REMOTE PART
@@ -166,9 +190,6 @@ class Golem:
         return self._remote_python
 
     async def _create_remote_python(self):
-        self._loop = asyncio.get_running_loop()
-        self._golem_node = GolemNode()
-        await self._golem_node.start()
 
         activity_cnt = 0
         async for activity in self._get_activity():
