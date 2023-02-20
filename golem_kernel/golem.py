@@ -1,5 +1,4 @@
 import asyncio
-import aiofiles
 import json
 from subprocess import check_output, check_call
 
@@ -36,11 +35,6 @@ Connected to {provider_name} [{provider_id}]
 async def negotiate(proposal):
     return await asyncio.wait_for(default_negotiate(proposal), timeout=5)
 
-async def log(*data):
-    line = " ".join([str(x) for x in data]) + "\n"
-    async with aiofiles.open("kernel.log", mode='a+') as f:
-        await f.write(line)
-
 class Golem:
     def __init__(self):
         self._connect_lock = asyncio.Lock()
@@ -62,8 +56,6 @@ class Golem:
         This will probably change in a significant way if we decide to pass raw messages
         from the kernel.
         """
-        await log("EXECUTE", code)
-
         if any(code.startswith(x) for x in ('%status', '%fund', '%budget', '%connect')):
             try:
                 async for out in self._run_local_command(code):
@@ -77,7 +69,6 @@ class Golem:
                 yield out
 
     async def aclose(self):
-        await log("aclose")
         #   NOTE: We don't wait for invoices here.
         #         We could easily use golem_core.default_payment_manager.DefaultPaymentManager,
         #         but this doesn't make much sense now - payments/invoices require some separate solution.
@@ -125,6 +116,61 @@ class Golem:
             yield result["stdout"], False
         if "result" in result:
             yield result["result"], True
+
+    def _get_funds(self, network):
+        check_call(["yagna", "payment", "fund", "--network", network])
+
+    async def _create_allocation(self, network, amount):
+        if self._allocation is not None:
+            await self._allocation.release()
+            self._allocation = None
+
+        if self._golem_node is None:
+            self._loop = asyncio.get_running_loop()
+            self._golem_node = GolemNode()
+            await self._golem_node.start()
+
+        self._allocation = await self._golem_node.create_allocation(amount, network)
+        await self._allocation.get_data()
+
+    async def _connect(self, *args):
+        async with self._connect_lock:
+            if self.connected:
+                return
+
+            activity_cnt = 0
+            async for activity in self._get_activity():
+                yield self._provider_info_text(activity)
+                yield f"Engine is starting ..."
+                activity_cnt += 1
+                remote_python = RemotePython(activity)
+                try:
+                    await asyncio.wait_for(remote_python.start(), timeout=100)
+                    yield "ready."
+                    self._remote_python = remote_python
+                    return
+                except Exception:
+                    yield "failed."
+
+                #   FIXME
+                if activity_cnt > 2:
+                    raise Exception("Failed to create a remote python")
+
+    async def _get_activity(self):
+        golem = self._golem_node
+
+        allocation = await golem.create_allocation(1)
+        demand = await golem.create_demand(PAYLOAD, allocations=[allocation])
+
+        chain = Chain(
+            demand.initial_proposals(),
+            Map(negotiate),
+            Map(default_create_agreement),
+            Map(default_create_activity),
+            Buffer(size=1),
+        )
+        async for activity in chain:
+            yield activity
 
     def _get_status_text(self):
         id_data = json.loads(check_output(["yagna", "app-key", "list", "--json"]))
@@ -174,65 +220,6 @@ class Golem:
         network, currency = payment_platform.split('-')[1:]
 
         return f"Allocated {amount} {currency} on {network}"
-
-    def _get_funds(self, network):
-        check_call(["yagna", "payment", "fund", "--network", network])
-
-    async def _create_allocation(self, network, amount):
-        if self._allocation is not None:
-            await self._allocation.release()
-            self._allocation = None
-
-        if self._golem_node is None:
-            self._loop = asyncio.get_running_loop()
-            self._golem_node = GolemNode()
-            await self._golem_node.start()
-
-        self._allocation = await self._golem_node.create_allocation(amount, network)
-        await self._allocation.get_data()
-
-    async def _connect(self, *args):
-        async with self._connect_lock:
-            if self._remote_python is not None:
-                return
-
-            activity_cnt = 0
-            async for activity in self._get_activity():
-                yield self._provider_info_text(activity)
-                yield f"Engine is starting ..."
-                activity_cnt += 1
-                await log(activity)
-                remote_python = RemotePython(activity)
-                try:
-                    await asyncio.wait_for(remote_python.start(), timeout=100)
-                    yield "ready."
-                    await log("CREATED REMOTE PYTHON")
-                    self._remote_python = remote_python
-                    return
-                except Exception as e:
-                    await log("Startup failed", activity, e)
-                    import traceback
-                    await log(traceback.format_exc())
-
-                #   FIXME
-                if activity_cnt > 2:
-                    raise Exception("Failed to create a remote python")
-
-    async def _get_activity(self):
-        golem = self._golem_node
-
-        allocation = await golem.create_allocation(1)
-        demand = await golem.create_demand(PAYLOAD, allocations=[allocation])
-
-        chain = Chain(
-            demand.initial_proposals(),
-            Map(negotiate),
-            Map(default_create_agreement),
-            Map(default_create_activity),
-            Buffer(size=1),
-        )
-        async for activity in chain:
-            yield activity
 
     def _provider_info_text(self, activity):
         proposal_data = activity.parent.parent.data
