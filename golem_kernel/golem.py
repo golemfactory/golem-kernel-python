@@ -26,6 +26,13 @@ Connected as node {id_}
 {budget}
 '''
 
+PROVIDER_TEMPLATE = '''\
+Connected to {provider_name} [{provider_id}]
+    RAM: {ram} GB
+    DISK: {disk} GB
+    CPU: {cpu} cores
+'''
+
 async def negotiate(proposal):
     return await asyncio.wait_for(default_negotiate(proposal), timeout=5)
 
@@ -104,13 +111,11 @@ class Golem:
                 yield self._get_budget_text()
             elif self.connected:
                 yield "Already connected\n"
-                yield self._get_provider_text()
             else:
-                yield "searching...\n"
+                yield "Searching...\n"
                 offer_args = code.split()[1:]
                 async for out in self._connect(*offer_args):
                     yield out
-                yield self._get_provider_text()
         else:
             raise ValueError(f"Unknown command: {code}")
 
@@ -170,11 +175,6 @@ class Golem:
 
         return f"Allocated {amount} {currency} on {network}"
 
-    def _get_provider_text(self):
-        if not self._remote_python:
-            return "No provider connected"
-        return str(self._remote_python.activity)
-
     def _get_funds(self, network):
         check_call(["yagna", "payment", "fund", "--network", network])
 
@@ -198,13 +198,14 @@ class Golem:
 
             activity_cnt = 0
             async for activity in self._get_activity():
-                yield f"Created {activity}, engine is starting ...\n"
+                yield self._provider_info_text(activity)
+                yield f"Engine is starting ..."
                 activity_cnt += 1
                 await log(activity)
                 remote_python = RemotePython(activity)
                 try:
                     await asyncio.wait_for(remote_python.start(), timeout=100)
-                    yield "Remote python is ready!"
+                    yield "ready."
                     await log("CREATED REMOTE PYTHON")
                     self._remote_python = remote_python
                     return
@@ -232,3 +233,15 @@ class Golem:
         )
         async for activity in chain:
             yield activity
+
+    def _provider_info_text(self, activity):
+        proposal_data = activity.parent.parent.data
+        properties = proposal_data.properties
+
+        return PROVIDER_TEMPLATE.format(
+            provider_id=proposal_data.issuer_id,
+            provider_name=properties['golem.node.id.name'],
+            cpu=properties['golem.inf.cpu.cores'],
+            ram=properties['golem.inf.mem.gib'],
+            disk=properties['golem.inf.storage.gib'],
+        )
