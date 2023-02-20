@@ -173,7 +173,7 @@ class Golem:
     def _get_provider_text(self):
         if not self._remote_python:
             return "No provider connected"
-        return str(self.remote_python.activity)
+        return str(self._remote_python.activity)
 
     def _get_funds(self, network):
         check_call(["yagna", "payment", "fund", "--network", network])
