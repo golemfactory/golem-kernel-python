@@ -1,7 +1,7 @@
 import asyncio
 import aiofiles
 import json
-from subprocess import check_output
+from subprocess import check_output, check_call
 
 from golem_core import GolemNode, Payload
 from golem_core.mid import (
@@ -60,7 +60,7 @@ class Golem:
         if any(code.startswith(x) for x in ('%status', '%fund', '%budget', '%connect')):
             try:
                 async for out in self._run_local_command(code):
-                    yield out
+                    yield out, False
             except Exception as e:
                 yield f"Error running a local command: {e}", False
         elif not self.connected:
@@ -85,17 +85,22 @@ class Golem:
     #   LOCAL PART
     async def _run_local_command(self, code):
         if code == '%status':
-            yield self._get_status_text(), False
-        elif code == '%fund':
-            yield "Waiting for funds\n", False
-            self._get_funds()
-            yield self._get_network_status_text('rinkeby') + "\n", False
-            yield self._get_budget_text(), False
+            yield self._get_status_text()
+        elif code.startswith('%fund'):
+            network = code.split()[1]
+            yield "Waiting for funds\n"
+            try:
+                self._get_funds(network)
+            except Exception:
+                yield "Funding failed"
+            else:
+                yield self._get_network_status_text(network) + "\n"
+                yield self._get_budget_text()
         else:
             raise ValueError(f"Unknown command: {code}")
 
-    def _get_funds(self):
-        check_output(["yagna", "payment", "fund"])
+    def _get_funds(self, network):
+        check_call(["yagna", "payment", "fund", "--network", network])
 
     def _get_status_text(self):
         id_data = json.loads(check_output(["yagna", "app-key", "list", "--json"]))
@@ -119,14 +124,21 @@ class Golem:
 
     def _get_network_status_text(self, network):
         if network == 'polygon':
-            template = 'On Polygon[mainet]: {glm:.2f} GLM {gas:.4f} MATIC'
+            network_full_name = 'Polygon[mainnet]'
         elif network == 'rinkeby':
-            template = 'On Rinkeby[testnet]: {glm:.2f} tGLM {gas:.4f} tETH'
+            network_full_name = 'Rinkeby[testnet]'
         else:
-            return f"Unknown network: {network}"
+            network_full_name = network
 
+        template = 'On {network_full_name}: {glm:.2f} {curr} {gas:.4f} {gas_curr}'
         data = json.loads(check_output(["yagna", "payment", "status", "--json", "--network", network]))
-        return template.format(glm=float(data["amount"]), gas=float(data["gas"]["balance"]))
+        return template.format(
+            network_full_name=network_full_name,
+            glm=float(data["amount"]),
+            curr=data["token"],
+            gas=float(data["gas"]["balance"]),
+            gas_curr=data["gas"]["currency_short_name"],
+        )
 
     def _get_budget_text(self):
         if self._allocation is None:
