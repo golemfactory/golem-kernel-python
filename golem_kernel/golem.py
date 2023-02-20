@@ -130,35 +130,29 @@ class Golem:
             self._golem_node = GolemNode()
             await self._golem_node.start()
 
+        check_call(["yagna", "payment", "init", "--network", network])
+        check_call(["yagna", "payment", "init", "--network", network, "--sender"])
+
         self._allocation = await self._golem_node.create_allocation(amount, network)
         await self._allocation.get_data()
 
     async def _connect(self, *args):
-        async with self._connect_lock:
-            if self.connected:
-                return
-
-            activity_cnt = 0
-            async for activity in self._get_activity():
-                yield self._provider_info_text(activity)
-                yield f"Engine is starting ..."
-                activity_cnt += 1
+        async for activity in self._get_activity():
+            yield self._provider_info_text(activity)
+            yield f"Engine is starting... "
+            try:
                 remote_python = RemotePython(activity)
-                try:
-                    await asyncio.wait_for(remote_python.start(), timeout=100)
-                    yield "ready."
-                    self._remote_python = remote_python
-                    return
-                except Exception:
-                    yield "failed."
+                await asyncio.wait_for(remote_python.start(), timeout=120)
+                break
+            except Exception:
+                yield "failed.\n"
+                asyncio.create_task(activity.parent.terminate())
 
-                #   FIXME
-                if activity_cnt > 2:
-                    raise Exception("Failed to create a remote python")
+        yield "ready."
+        self._remote_python = remote_python
 
     async def _get_activity(self):
-        golem = self._golem_node
-        demand = await golem.create_demand(PAYLOAD, allocations=[self._allocation])
+        demand = await self._golem_node.create_demand(PAYLOAD, allocations=[self._allocation])
 
         chain = Chain(
             demand.initial_proposals(),
