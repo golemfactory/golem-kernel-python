@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime, timedelta
 import json
 from subprocess import check_output, check_call
 
@@ -57,14 +58,16 @@ class Golem:
         This will probably change in a significant way if we decide to pass raw messages
         from the kernel.
         """
-        if any(code.startswith(x) for x in ('%status', '%fund', '%budget', '%connect')):
+        local_commands = ('%status', '%fund', '%budget', '%connect', '%disconnect')
+
+        if any(code.startswith(command) for command in local_commands):
             try:
                 async for out in self._run_local_command(code):
                     yield out, False
             except Exception as e:
                 yield f"Error running a local command: {e}", False
         elif not self.connected:
-            yield "Provider not connected. Available commands: %status, %fund, %budget, %connect.", False
+            yield f"Provider not connected. Available commands: {', '.join(local_commands)}.", False
         else:
             async for out in self._run_remote_command(code):
                 yield out
@@ -110,6 +113,19 @@ class Golem:
                 offer_args = code.split()[1:]
                 async for out in self._connect(*offer_args):
                     yield out
+        elif code.startswith('%disconnect'):
+            if not self.connected:
+                yield "No connected provider"
+            else:
+                yield "Disconnecting... "
+                invoice_amount = await self._disconnect_and_pay()
+                yield "done.\n"
+
+                if invoice_amount is None:
+                    yield "Invoice is missing, paid nothing.\n"
+                else:
+                    yield f"Total cost: {invoice_amount}\n"
+                yield self._get_budget_text()
         else:
             raise ValueError(f"Unknown command: {code}")
 
@@ -166,6 +182,28 @@ class Golem:
         )
         async for activity in chain:
             yield activity
+
+    async def _disconnect_and_pay(self):
+        """Terminate agreement, wait max 5s for invoice, accept it, return accepted amount."""
+        agreement = self._remote_python.activity.parent
+        self._remote_python = None
+
+        await agreement.close_all()
+
+        stop = datetime.now() + timedelta(seconds=5)
+        while datetime.now() < stop:
+            if agreement.invoice is not None:
+                break
+            else:
+                await asyncio.sleep(0.1)
+
+        if agreement.invoice is None:
+            return None
+
+        await agreement.invoice.accept_full(self._allocation)
+        await self._allocation.get_data(force=True)
+
+        return float(agreement.invoice.data.amount)
 
     ########################################################
     #   Functions that change nothing, just return some text
