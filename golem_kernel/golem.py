@@ -317,4 +317,19 @@ class Golem:
         )
 
     def _payload_text(self, payload):
-        return str(payload)
+        mem = payload.constraints.min_mem_gib
+        disk = payload.constraints.min_storage_gib
+        cores = payload.constraints.min_cpu_threads
+
+        constraint_parts = []
+        if mem:
+            constraint_parts.append(f"RAM>={mem}gb")
+        if disk:
+            constraint_parts.append(f"DISK>={disk}gb")
+        if cores:
+            constraint_parts.append(f"CPU>={cores}")
+
+        if constraint_parts:
+            return "(" + " ".join(constraint_parts) + ")"
+        else:
+            return "just any machine"
