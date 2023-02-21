@@ -44,7 +44,7 @@ async def bestprice_score(proposal):
 async def random_score(proposal):
     return random()
 
-SCORING_FUNCTIONS = {"bestprice": bestprice_score, "random": random_score}
+STRATEGY_SCORING_FUNCTION = {"bestprice": bestprice_score, "random": random_score}
 
 class Golem:
     def __init__(self):
@@ -119,7 +119,11 @@ class Golem:
             elif self.connected:
                 yield "Already connected\n"
             else:
-                args_str = code.split(maxsplit=1)[1]
+                try:
+                    args_str = code.split(maxsplit=1)[1]
+                except IndexError:
+                    args_str = ''
+
                 payload, offer_scorer = await self._parse_connect_args(args_str)
                 yield f"Searching for {self._payload_text(payload)}...\n"
                 async for out in self._connect(payload, offer_scorer):
@@ -219,10 +223,15 @@ class Golem:
 
     async def _parse_connect_args(self, text):
         """IN: raw text passed to connect. OUT: payload (or raises exception)."""
+
         params = {
             "image_hash": DEFAULT_IMAGE_HASH,
             "capabilities": [vm.VM_CAPS_VPN],
+            "min_mem_gib": 0,
+            "min_cpu_threads": 0,
+            "min_storage_gib": 0,
         }
+        strategy = "bestprice"
 
         parts = text.split()
         for part in parts:
@@ -236,14 +245,13 @@ class Golem:
                 params["min_storage_gib"] = float(part[5:])
             elif part.startswith("strategy="):
                 strategy = part[9:]
-                try:
-                    scoring_function = SCORING_FUNCTIONS[strategy]
-                except KeyError:
+                if strategy not in STRATEGY_SCORING_FUNCTION:
                     raise ValueError(f"Unknown strategy {part[9:]}")
-                offer_scorer = SimpleScorer(scoring_function, min_proposals=10, max_wait=timedelta(seconds=3))
             else:
                 raise ValueError(f"Unknown option: {part}")
 
+        scoring_function = STRATEGY_SCORING_FUNCTION[strategy]
+        offer_scorer = SimpleScorer(scoring_function, min_proposals=10, max_wait=timedelta(seconds=3))
         payload = await vm.repo(**params)
         return payload, offer_scorer
 
