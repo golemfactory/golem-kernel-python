@@ -7,10 +7,8 @@ from golem_core import commands
 
 
 class RemotePython:
-    def __init__(self, activity, *, start_timeout=300, batch_timeout=300):
+    def __init__(self, activity):
         self.activity = activity
-        self.start_timeout = start_timeout
-        self.batch_timeout = batch_timeout
 
         self._connection_uri = None
         self._auth_header = None
@@ -18,6 +16,7 @@ class RemotePython:
 
     async def start(self):
         activity = self.activity
+
         network = await activity.node.create_network("192.168.0.1/24")
         provider_id = activity.parent.parent.data.issuer_id
         ip = await network.create_node(provider_id)
@@ -26,16 +25,14 @@ class RemotePython:
         batch = await self.activity.execute_commands(
             commands.Deploy(deploy_args),
             commands.Start(),
-
-            commands.SendFile('provider/server.py', '/ttt/server.py'),
-            commands.Run('cp /ttt/server.py /python_server/server.py'),
-
             commands.Run('nohup python server.py > /dev/null 2>&1 &'),
         )
-        await batch.wait(timeout=100)
+        #   NOTE: We don't set any timeout here because caller of RemotePython.start() should
+        #         have their own timeout either way.
+        await batch.wait()
 
-        #   Wait a a short while until the server starts
-        #   (TODO: a better solution maybe?)
+        #   Wait a little while until server.py starts.
+        #   TODO: a better solution maybe?
         await asyncio.sleep(3)
 
         url = network.node._api_config.net_url

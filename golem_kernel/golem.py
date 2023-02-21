@@ -37,10 +37,11 @@ async def negotiate(proposal):
 
 class Golem:
     def __init__(self):
-        self._connect_lock = asyncio.Lock()
         self._golem_node = None
         self._allocation = None
         self._remote_python = None
+
+        #   The loop where GolemNode is running, we need it in aclose()
         self._loop = None
 
     ####################
@@ -79,6 +80,8 @@ class Golem:
             fut = asyncio.run_coroutine_threadsafe(self._golem_node.aclose(), self._loop)
             fut.result()
 
+    ####################
+    #   INTERNALS
     async def _run_local_command(self, code):
         if code == '%status':
             yield self._get_status_text()
@@ -164,6 +167,8 @@ class Golem:
         async for activity in chain:
             yield activity
 
+    ########################################################
+    #   Functions that change nothing, just return some text
     def _get_status_text(self):
         id_data = json.loads(check_output(["yagna", "app-key", "list", "--json"]))
 
@@ -175,14 +180,12 @@ class Golem:
         else:
             id_ = "[unknown node id]"  # this should not be possible
 
-        status_data = {
-            "id_": id_,
-            "budget": self._get_budget_text(),
-            "polygon_status": self._get_network_status_text('polygon'),
-            "rinkeby_status": self._get_network_status_text('rinkeby'),
-        }
-
-        return STATUS_TEMPLATE.format(**status_data)
+        return STATUS_TEMPLATE.format(
+            id_=id_,
+            budget=self._get_budget_text(),
+            polygon_status=self._get_network_status_text('polygon'),
+            rinkeby_status=self._get_network_status_text('rinkeby'),
+        )
 
     def _get_network_status_text(self, network):
         if network == 'polygon':
