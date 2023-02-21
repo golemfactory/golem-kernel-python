@@ -1,11 +1,12 @@
 import asyncio
 from datetime import datetime, timedelta
 import json
+from random import random
 from subprocess import check_output, check_call
 
 from golem_core import GolemNode
 from golem_core.mid import (
-    Chain, Map, Buffer,
+    Chain, Map, Buffer, SimpleScorer,
     default_negotiate, default_create_agreement, default_create_activity
 )
 from yapapi.payload import vm
@@ -31,6 +32,19 @@ Connected to {provider_name} [{provider_id}]
 
 async def negotiate(proposal):
     return await asyncio.wait_for(default_negotiate(proposal), timeout=5)
+
+async def bestprice_score(proposal):
+    properties = proposal.data.properties
+    if properties['golem.com.pricing.model'] != 'linear':
+        return None
+
+    coeffs = properties['golem.com.pricing.model.linear.coeffs']
+    return 1 - (coeffs[0] + coeffs[1])
+
+async def random_score(proposal):
+    return random()
+
+SCORING_FUNCTIONS = {"bestprice": bestprice_score, "random": random_score}
 
 class Golem:
     def __init__(self):
@@ -106,9 +120,9 @@ class Golem:
                 yield "Already connected\n"
             else:
                 args_str = code.split(maxsplit=1)[1]
-                payload = await self._parse_connect_args(args_str)
+                payload, offer_scorer = await self._parse_connect_args(args_str)
                 yield f"Searching for {self._payload_text(payload)}...\n"
-                async for out in self._connect(payload):
+                async for out in self._connect(payload, offer_scorer):
                     yield out
         elif code.startswith('%disconnect'):
             if not self.connected:
@@ -152,8 +166,8 @@ class Golem:
         self._allocation = await self._golem_node.create_allocation(amount, network)
         await self._allocation.get_data()
 
-    async def _connect(self, payload):
-        async for activity in self._get_activity(payload):
+    async def _connect(self, payload, offer_scorer):
+        async for activity in self._get_activity(payload, offer_scorer):
             yield self._provider_info_text(activity)
             yield f"Engine is starting... "
             try:
@@ -167,11 +181,12 @@ class Golem:
         yield "ready."
         self._remote_python = remote_python
 
-    async def _get_activity(self, payload):
+    async def _get_activity(self, payload, offer_scorer):
         demand = await self._golem_node.create_demand(payload, allocations=[self._allocation])
 
         chain = Chain(
             demand.initial_proposals(),
+            offer_scorer,
             Map(negotiate),
             Map(default_create_agreement),
             Map(default_create_activity),
@@ -220,13 +235,17 @@ class Golem:
             elif part.startswith("disk>"):
                 params["min_storage_gib"] = float(part[5:])
             elif part.startswith("strategy="):
-                if part[9:] != "bestprice":
+                strategy = part[9:]
+                try:
+                    scoring_function = SCORING_FUNCTIONS[strategy]
+                except KeyError:
                     raise ValueError(f"Unknown strategy {part[9:]}")
+                offer_scorer = SimpleScorer(scoring_function, min_proposals=10, max_wait=timedelta(seconds=3))
             else:
                 raise ValueError(f"Unknown option: {part}")
 
         payload = await vm.repo(**params)
-        return payload
+        return payload, offer_scorer
 
     ########################################################
     #   Functions that change nothing, just return some text
