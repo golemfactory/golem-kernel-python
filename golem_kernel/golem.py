@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import json
 from subprocess import check_output, check_call
 
-from golem_core import GolemNode, Payload
+from golem_core import GolemNode
 from golem_core.mid import (
     Chain, Map, Buffer,
     default_negotiate, default_create_agreement, default_create_activity
@@ -12,11 +12,7 @@ from yapapi.payload import vm
 
 from .remote_python import RemotePython
 
-
-PAYLOAD = Payload.from_image_hash(
-    "701d57c13726afaf15bf8d602ce0710fc6119d0192507a220cef48d8",
-    capabilities=[vm.VM_CAPS_VPN],
-)
+DEFAULT_IMAGE_HASH = "701d57c13726afaf15bf8d602ce0710fc6119d0192507a220cef48d8"
 
 STATUS_TEMPLATE = '''\
 Connected as node {id_}
@@ -109,9 +105,10 @@ class Golem:
             elif self.connected:
                 yield "Already connected\n"
             else:
-                yield "Searching...\n"
-                offer_args = code.split()[1:]
-                async for out in self._connect(*offer_args):
+                args_str = code.split(maxsplit=1)[1]
+                payload = await self._parse_connect_args(args_str)
+                yield f"Searching for {self._payload_text(payload)}...\n"
+                async for out in self._connect(payload):
                     yield out
         elif code.startswith('%disconnect'):
             if not self.connected:
@@ -155,8 +152,8 @@ class Golem:
         self._allocation = await self._golem_node.create_allocation(amount, network)
         await self._allocation.get_data()
 
-    async def _connect(self, *args):
-        async for activity in self._get_activity():
+    async def _connect(self, payload):
+        async for activity in self._get_activity(payload):
             yield self._provider_info_text(activity)
             yield f"Engine is starting... "
             try:
@@ -170,8 +167,8 @@ class Golem:
         yield "ready."
         self._remote_python = remote_python
 
-    async def _get_activity(self):
-        demand = await self._golem_node.create_demand(PAYLOAD, allocations=[self._allocation])
+    async def _get_activity(self, payload):
+        demand = await self._golem_node.create_demand(payload, allocations=[self._allocation])
 
         chain = Chain(
             demand.initial_proposals(),
@@ -204,6 +201,32 @@ class Golem:
         await self._allocation.get_data(force=True)
 
         return float(agreement.invoice.data.amount)
+
+    async def _parse_connect_args(self, text):
+        """IN: raw text passed to connect. OUT: payload (or raises exception)."""
+        params = {
+            "image_hash": DEFAULT_IMAGE_HASH,
+            "capabilities": [vm.VM_CAPS_VPN],
+        }
+
+        parts = text.split()
+        for part in parts:
+            if part.startswith("image_hash="):
+                params["image_hash"] = part[11:]
+            elif part.startswith("mem>"):
+                params["min_mem_gib"] = float(part[4:])
+            elif part.startswith("cores>"):
+                params["min_cpu_threads"] = int(part[6:])
+            elif part.startswith("disk>"):
+                params["min_storage_gib"] = float(part[5:])
+            elif part.startswith("strategy="):
+                if part[9:] != "bestprice":
+                    raise ValueError(f"Unknown strategy {part[9:]}")
+            else:
+                raise ValueError(f"Unknown option: {part}")
+
+        payload = await vm.repo(**params)
+        return payload
 
     ########################################################
     #   Functions that change nothing, just return some text
@@ -265,3 +288,6 @@ class Golem:
             ram=properties['golem.inf.mem.gib'],
             disk=properties['golem.inf.storage.gib'],
         )
+
+    def _payload_text(self, payload):
+        return str(payload)
