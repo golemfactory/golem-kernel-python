@@ -1,3 +1,0 @@
-jupyterlab==3.6.1
-git+https://github.com/golemfactory/golem-core-python.git
-websockets==10.4
