@@ -49,14 +49,19 @@ class RemotePython:
         if self._ws is None:
             raise RuntimeError("RemotePython didn't start succesfully")
 
+        await self._send(code)
+        response = await self._receive()
+        return json.loads(response.decode())
+
+    async def _send(self, code):
         data = code.encode()
         bytes_len = len(data)
         full_data = str(bytes_len).encode() + b' ' + data
         await self._ws.send(full_data)
-        response = await self._receive()
-        return json.loads(response.decode())
 
     async def _receive(self):
+        #   NOTE: We always send a single message and receive a single response, so this simplified
+        #         implementation should be OK - we never receive anything after the message_len.
         init_data = await self._ws.recv()
 
         message_len, data = init_data.split(b' ', maxsplit=1)
@@ -64,8 +69,5 @@ class RemotePython:
 
         while len(data) < message_len:
             data += await self._ws.recv()
-
-        with open("ttt.txt", "ab+") as f:
-            f.write(data + b"\n\n\n")
 
         return data

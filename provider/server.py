@@ -18,6 +18,29 @@ def start_kernel():
     connection_file_name = line.decode().strip().split()[3]
     return connection_file_name
 
+def get_code(conn):
+    #   NOTE: Code is sent only after previous code was fully processed, so this simplified
+    #         implementation should be OK - we never receive anything after the message_len.
+    init_data = conn.recv(1024)
+
+    if not init_data:
+        return None
+
+    message_len, data = init_data.split(b' ', maxsplit=1)
+    message_len = int(message_len.decode())
+
+    while len(data) < message_len:
+        data += conn.recv(1024)
+
+    return data.decode()
+
+def send_result(conn, result):
+    data = result.encode()
+    bytes_len = len(data)
+    full_data = str(bytes_len).encode() + b' ' + data
+
+    conn.sendall(full_data)
+
 def run_server():
     while True:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -29,69 +52,19 @@ def run_server():
             client = SimpleClient(connection_file_name)
 
             with conn:
-                print('Connected by', addr)
                 while True:
-                    init_data = conn.recv(1024)
-
-                    if not init_data:
+                    code = get_code(conn)
+                    if code is None:
                         break
 
-                    message_len, data = init_data.split(b' ', maxsplit=1)
-                    message_len = int(message_len.decode())
-
-                    while len(data) < message_len:
-                        data += conn.recv(1024)
-                    
-                    code = data.decode()
                     try:
                         result = client.execute(code)
                     except Exception as e:
                         #   I'm not sure if this can ever happen, but just in case
                         result = {'stdout': f"KERNEL CLIENT ERROR: {e}"}
 
-                    data = json.dumps(result).encode()
-                    bytes_len = len(data)
-                    full_data = str(bytes_len).encode() + b' ' + data
+                    send_result(conn, json.dumps(result))
 
-                    conn.sendall(full_data)
-
-# def run_server():
-#     while True:
-#         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-#             s.bind((HOST, PORT))
-#             s.listen(1)
-#             conn, addr = s.accept()
-# 
-#             connection_file_name = start_kernel()
-#             client = SimpleClient(connection_file_name)
-# 
-#             with conn:
-#                 print('Connected by', addr)
-#                 while True:
-#                     init_data = conn.recv(1024)
-# 
-#                     if not init_data:
-#                         break
-# 
-#                     message_len, data = init_data.split(b' ', maxsplit=1)
-#                     message_len = int(message_len.decode())
-# 
-#                     while len(data) < message_len:
-#                         data += conn.recv(1024)
-# 
-#                     code = "print('code!')"
-# 
-#                     try:
-#                         result = client.execute(code)
-#                     except Exception as e:
-#                         #   I'm not sure if this can ever happen, but just in case
-#                         result = {'stdout': f"KERNEL CLIENT ERROR: {e}"}
-# 
-#                     data = json.dumps(result).encode()
-#                     bytes_len = len(data)
-#                     full_data = str(bytes_len).encode() + b' ' + data
-# 
-#                     conn.sendall(full_data)
 
 if __name__ == '__main__':
     run_server()
