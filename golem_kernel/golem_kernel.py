@@ -3,7 +3,7 @@ from ipykernel.kernelbase import Kernel
 from .golem import Golem
 
 class GolemKernel(Kernel):
-    implementation = 'GLMKernel'
+    implementation = 'GolemKernel'
     implementation_version = '0.001'
     language = 'python'
     language_version = '3'
@@ -12,7 +12,7 @@ class GolemKernel(Kernel):
         'mimetype': 'text/x-python',
         'file_extension': '.py',
     }
-    banner = "GLM Kernel - your python lives in the Golem Network"
+    banner = "Golem Kernel - your python lives in the Golem Network"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -1,8 +1,6 @@
-# Echo server program
-import socket
-
-import subprocess
 import json
+import socket
+import subprocess
 
 from simple_client import SimpleClient
 
