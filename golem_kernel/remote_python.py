@@ -25,10 +25,6 @@ class RemotePython:
         batch = await self.activity.execute_commands(
             commands.Deploy(deploy_args),
             commands.Start(),
-
-            commands.SendFile('provider/server.py', '/ttt/server.py'),
-            commands.Run('cp /ttt/server.py /python_server/server.py'),
-
             commands.Run('nohup python server.py > /dev/null 2>&1 &'),
         )
         #   NOTE: We don't set any timeout here because caller of RemotePython.start() should

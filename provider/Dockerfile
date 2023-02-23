@@ -15,5 +15,5 @@ RUN python3 -m pip install numpy
 RUN python3 -m pip install -r requirements.txt
 RUN rm requirements.txt
 
-COPY simple_client.py .
 COPY server.py .
+COPY simple_client.py .

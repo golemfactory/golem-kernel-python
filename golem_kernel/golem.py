@@ -13,7 +13,7 @@ from yapapi.payload import vm
 
 from .remote_python import RemotePython
 
-DEFAULT_IMAGE_HASH = "701d57c13726afaf15bf8d602ce0710fc6119d0192507a220cef48d8"
+DEFAULT_IMAGE_HASH = "5389c01c128f94f14653bc0b56822c22b4b3987737ef8f3c0ac61946"
 
 STATUS_TEMPLATE = '''\
 Connected as node {id_}
