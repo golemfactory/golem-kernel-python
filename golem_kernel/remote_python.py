@@ -25,6 +25,10 @@ class RemotePython:
         batch = await self.activity.execute_commands(
             commands.Deploy(deploy_args),
             commands.Start(),
+
+            commands.SendFile('provider/server.py', '/ttt/server.py'),
+            commands.Run('cp /ttt/server.py /python_server/server.py'),
+
             commands.Run('nohup python server.py > /dev/null 2>&1 &'),
         )
         #   NOTE: We don't set any timeout here because caller of RemotePython.start() should
@@ -45,6 +49,23 @@ class RemotePython:
         if self._ws is None:
             raise RuntimeError("RemotePython didn't start succesfully")
 
-        await self._ws.send(code.encode())
-        response = await self._ws.recv()
+        data = code.encode()
+        bytes_len = len(data)
+        full_data = str(bytes_len).encode() + b' ' + data
+        await self._ws.send(full_data)
+        response = await self._receive()
         return json.loads(response.decode())
+
+    async def _receive(self):
+        init_data = await self._ws.recv()
+
+        message_len, data = init_data.split(b' ', maxsplit=1)
+        message_len = int(message_len.decode())
+
+        while len(data) < message_len:
+            data += await self._ws.recv()
+
+        with open("ttt.txt", "ab+") as f:
+            f.write(data + b"\n\n\n")
+
+        return data
