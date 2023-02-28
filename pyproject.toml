@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "golem-kernel"
-version = "0.0.1"
+version = "0.1.0"
 description = "Jupyter Kernel on Golem (https://www.golem.network/)"
 authors = ["Jan Betley <jan.betley@golem.network>", "GolemFactory <contact@golem.network>"]
 license = "LGPL-3.0-or-later"
@@ -14,9 +14,8 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Distributed Computing"
 ]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 jupyter = "1.0.0"
 websockets = "10.4"
-golem_core = {git = "https://github.com/golemfactory/golem-core-python.git", branch = "main"}
+golem_core = "0.1.0"

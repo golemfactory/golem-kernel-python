@@ -5,17 +5,10 @@
 This assumes you have a running `yagna` and `YAGNA_APPKEY` variable is set.
 
 ```
-#   Install jupyter lab
-pip3 install jupyterlab
+#   Install packages
+pip3 install jupyterlab golem-kernel
 
-#   Install golem-kernel package
-#   (TODO: this will change to pip install)
-git clone git@github.com:golemfactory/glm_jupyter.git
-cd glm_jupyter
-git checkout jb/v0
-pip3 install .
-
-#   Add golem-kernel to a list of known kernels
+#   Add golem-kernel to the list of known kernels
 python3 -m golem_kernel install
 
 #   Start jupyter in a browser. Golem kernel should be available.
