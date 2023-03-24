@@ -1,0 +1,16 @@
+FROM maugnorbert/docker_golem_cuda_base
+
+WORKDIR /usr/src/app
+VOLUME /usr/src/app/output
+
+#   the only purpose of numpy here is demo
+RUN apt-get update && apt-get install -y python3-pip pciutils curl net-tools
+
+COPY requirements.txt .
+RUN python3 -m pip install numpy
+
+RUN python3 -m pip install -r requirements.txt
+RUN rm requirements.txt
+
+COPY server.py .
+COPY simple_client.py .

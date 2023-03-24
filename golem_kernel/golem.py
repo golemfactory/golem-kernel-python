@@ -176,7 +176,7 @@ class Golem:
             yield f"Engine is starting... "
             try:
                 remote_python = RemotePython(activity)
-                await asyncio.wait_for(remote_python.start(), timeout=120)
+                await asyncio.wait_for(remote_python.start(), timeout=3600)
                 break
             except Exception:
                 yield "failed.\n"
