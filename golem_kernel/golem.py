@@ -130,7 +130,6 @@ class Golem:
                 yield f"Searching for {self._payload_text(payload)}...\n"
                 async for out in self._connect(payload, offer_scorer):
                     yield out
-                await self._fix_mtu()
         elif code.startswith('%disconnect'):
             if not self.connected:
                 yield "No connected provider"
@@ -153,10 +152,6 @@ class Golem:
             yield result["stdout"], False
         if "result" in result:
             yield result["result"], True
-
-    async def _fix_mtu(self):
-        async for _ in self._run_remote_command('!/sbin/ifconfig eth1 mtu 1500 up'):
-            pass
 
     def _get_funds(self, network):
         check_call(["yagna", "payment", "fund", "--network", network])
@@ -188,6 +183,9 @@ class Golem:
             except Exception:
                 yield "failed.\n"
                 asyncio.create_task(activity.parent.terminate())
+
+        async for _ in self._run_remote_command("%set_env TMPDIR=/usr/src/app/output/"):
+            pass
 
         yield "ready."
         self._remote_python = remote_python

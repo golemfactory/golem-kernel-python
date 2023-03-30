@@ -25,10 +25,30 @@ class RemotePython:
         batch = await self.activity.execute_commands(
             commands.Deploy(deploy_args),
             commands.Start(),
-            commands.Run('nohup /usr/src/app/output/venv/bin/python3 server.py > /usr/src/app/output/out.txt 2>&1 &'),
+            commands.Run('/sbin/ifconfig eth1 mtu 1500 up'),
         )
         #   NOTE: We don't set any timeout here because caller of RemotePython.start() should
         #         have their own timeout either way.
+        await batch.wait()
+
+        await asyncio.sleep(2)
+
+        batch = await self.activity.execute_commands(
+            commands.Run('cp -R /usr/src/app/venv /usr/src/app/output/venv'),
+        )
+        await batch.wait()
+        await asyncio.sleep(10)
+
+        batch = await self.activity.execute_commands(
+            commands.Run("sed -i 's=/usr/src/app/venv=/usr/src/app/output/venv=g' /usr/src/app/output/venv/bin/*"),
+        )
+        await batch.wait()
+
+        await asyncio.sleep(3)
+
+        batch = await self.activity.execute_commands(
+            commands.Run('nohup /usr/src/app/output/venv/bin/python3 server.py > /usr/src/app/output/out.txt 2>&1 &'),
+        )
         await batch.wait()
 
         #   Wait a little while until server.py starts.

@@ -8,7 +8,7 @@ HOST = ''
 PORT = 5000
 
 def start_kernel():
-    cmd = ["jupyter", "kernel", "--kernel", "python3"]
+    cmd = ["/usr/src/app/output/venv/bin/jupyter", "kernel", "--kernel", "python3"]
     proc = subprocess.Popen(cmd, stderr=subprocess.PIPE)
 
     proc.stderr.readline()
