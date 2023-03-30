@@ -25,7 +25,7 @@ class RemotePython:
         batch = await self.activity.execute_commands(
             commands.Deploy(deploy_args),
             commands.Start(),
-            commands.Run('nohup python3 server.py > /usr/src/app/output/out.txt 2>&1 &'),
+            commands.Run('nohup /usr/src/app/output/venv/bin/python3 server.py > /usr/src/app/output/out.txt 2>&1 &'),
         )
         #   NOTE: We don't set any timeout here because caller of RemotePython.start() should
         #         have their own timeout either way.

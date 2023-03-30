@@ -1,0 +1,42 @@
+{
+  "version": "0.1.0",
+  "createdAt": "2023-03-29T12:51:00.000000Z",
+  "expiresAt": "2100-01-01T00:01:00.000000Z",
+  "metadata": {
+    "name": "Jupyter lab",
+    "description": "Jupyter lab with outbound internet enabled",
+    "version": "0.1.0"
+  },
+  "payload": [
+    {
+      "platform": {
+        "arch": "x86_64",
+        "os": "linux"
+      },
+      "urls": [
+        "http://girepo.dev.golem.network:8000/docker-golem-kernel-gpu-latest-5a1d7470a3.gvmi"
+      ],
+      "hash": "sha3:719048450d6870faa96b3a738fdf08e81c6f323e17190bb9c2765798"
+    }
+  ],
+  "compManifest": {
+    "version": "0.1.0",
+    "script": {
+      "commands": [
+        "run .*"
+      ],
+      "match": "regex"
+    },
+    "net": {
+      "inet": {
+        "out": {
+          "protocols": ["https"],
+          "urls": [
+            "https://files.pythonhosted.org",
+            "https://pypi.org"
+          ]
+        }
+      }
+    }
+  }
+}

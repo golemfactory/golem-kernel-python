@@ -1,6 +1,8 @@
 import asyncio
+import base64
 from datetime import datetime, timedelta
 import json
+from pathlib import Path
 from random import random
 from subprocess import check_output, check_call
 
@@ -128,6 +130,7 @@ class Golem:
                 yield f"Searching for {self._payload_text(payload)}...\n"
                 async for out in self._connect(payload, offer_scorer):
                     yield out
+                await self._fix_mtu()
         elif code.startswith('%disconnect'):
             if not self.connected:
                 yield "No connected provider"
@@ -150,6 +153,10 @@ class Golem:
             yield result["stdout"], False
         if "result" in result:
             yield result["result"], True
+
+    async def _fix_mtu(self):
+        async for _ in self._run_remote_command('!/sbin/ifconfig eth1 mtu 1500 up'):
+            pass
 
     def _get_funds(self, network):
         check_call(["yagna", "payment", "fund", "--network", network])
@@ -224,9 +231,14 @@ class Golem:
     async def _parse_connect_args(self, text):
         """IN: raw text passed to connect. OUT: payload (or raises exception)."""
 
+
+        manifest = open(Path(__file__).parent.joinpath("manifest.json"), "rb").read()
+        manifest = base64.b64encode(manifest).decode("utf-8")
+
         params = {
-            "image_hash": DEFAULT_IMAGE_HASH,
-            "capabilities": [vm.VM_CAPS_VPN],
+            "manifest": manifest,
+            # "image_hash": DEFAULT_IMAGE_HASH,
+            "capabilities": [vm.VM_CAPS_VPN, 'inet', 'manifest-support'],
             "min_mem_gib": 0,
             "min_cpu_threads": 0,
             "min_storage_gib": 0,
@@ -235,6 +247,7 @@ class Golem:
 
         parts = text.split()
         for part in parts:
+            # TODO: to remove if providing manifest
             if part.startswith("image_hash="):
                 params["image_hash"] = part[11:]
             elif part.startswith("mem>"):
@@ -252,7 +265,7 @@ class Golem:
 
         scoring_function = STRATEGY_SCORING_FUNCTION[strategy]
         offer_scorer = SimpleScorer(scoring_function, min_proposals=10, max_wait=timedelta(seconds=3))
-        payload = await vm.repo(**params)
+        payload = await vm.manifest(**params)
         return payload, offer_scorer
 
     ########################################################
