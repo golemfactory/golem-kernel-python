@@ -26,25 +26,16 @@ class RemotePython:
             commands.Deploy(deploy_args),
             commands.Start(),
             commands.Run('/sbin/ifconfig eth1 mtu 1500 up'),
+            commands.Run('cp -R /usr/src/app/venv /usr/src/app/output/venv'),
         )
         #   NOTE: We don't set any timeout here because caller of RemotePython.start() should
         #         have their own timeout either way.
         await batch.wait()
 
-        await asyncio.sleep(2)
-
-        batch = await self.activity.execute_commands(
-            commands.Run('cp -R /usr/src/app/venv /usr/src/app/output/venv'),
-        )
-        await batch.wait()
-        await asyncio.sleep(10)
-
         batch = await self.activity.execute_commands(
             commands.Run("sed -i 's=/usr/src/app/venv=/usr/src/app/output/venv=g' /usr/src/app/output/venv/bin/*"),
         )
         await batch.wait()
-
-        await asyncio.sleep(3)
 
         batch = await self.activity.execute_commands(
             commands.Run('nohup /usr/src/app/output/venv/bin/python3 server.py > /usr/src/app/output/out.txt 2>&1 &'),
@@ -60,8 +51,6 @@ class RemotePython:
         self._connection_uri = f"{net_api_ws}/net/{network.id}/tcp/{ip}/5000"
         self._auth_header = {"Authorization": f"Bearer {self.activity.node._api_config.app_key}"}
         self._ws = await websockets.connect(self._connection_uri, extra_headers=self._auth_header)
-        print('Connected with WS')
-        # , ping_timeout = None, max_size = 20_000_000
 
     async def execute(self, code):
         if self._ws is None:

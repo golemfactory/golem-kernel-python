@@ -155,8 +155,7 @@ class Golem:
             yield result["result"], True
 
     async def _set_tmp_dir(self):
-        # TODO: coś nie tak z wywołaniem tego. Coś zawisa.... FIX IT!
-        async for _ in self._run_remote_command("%set_env TMPDIR=/usr/src/app/output/"):
+        async for _ in self.execute("%set_env TMPDIR=/usr/src/app/output/"):
             pass
 
     def _get_funds(self, network):
