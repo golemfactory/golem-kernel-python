@@ -18,4 +18,5 @@ classifiers = [
 [tool.poetry.dependencies]
 jupyter = "1.0.0"
 websockets = "10.4"
-golem_core = "0.1.0"
+golem_core = { git = "https://github.com/golemfactory/golem-core-python", rev = "6086549" }
+#golem_core = "0.1.0"

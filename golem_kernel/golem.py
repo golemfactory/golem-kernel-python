@@ -11,7 +11,7 @@ from golem_core.mid import (
     Chain, Map, Buffer, SimpleScorer,
     default_negotiate, default_create_agreement, default_create_activity
 )
-from yapapi.payload import vm
+from golem_core.payload.vm import ManifestVmPayload
 
 from .remote_python import RemotePython
 
@@ -130,6 +130,7 @@ class Golem:
                 yield f"Searching for {self._payload_text(payload)}...\n"
                 async for out in self._connect(payload, offer_scorer):
                     yield out
+                await self._set_tmp_dir()
         elif code.startswith('%disconnect'):
             if not self.connected:
                 yield "No connected provider"
@@ -152,6 +153,11 @@ class Golem:
             yield result["stdout"], False
         if "result" in result:
             yield result["result"], True
+
+    async def _set_tmp_dir(self):
+        # TODO: coś nie tak z wywołaniem tego. Coś zawisa.... FIX IT!
+        async for _ in self._run_remote_command("%set_env TMPDIR=/usr/src/app/output/"):
+            pass
 
     def _get_funds(self, network):
         check_call(["yagna", "payment", "fund", "--network", network])
@@ -183,9 +189,6 @@ class Golem:
             except Exception:
                 yield "failed.\n"
                 asyncio.create_task(activity.parent.terminate())
-
-        async for _ in self._run_remote_command("%set_env TMPDIR=/usr/src/app/output/"):
-            pass
 
         yield "ready."
         self._remote_python = remote_python
@@ -236,7 +239,7 @@ class Golem:
         params = {
             "manifest": manifest,
             # "image_hash": DEFAULT_IMAGE_HASH,
-            "capabilities": [vm.VM_CAPS_VPN, 'inet', 'manifest-support'],
+            "capabilities": ['vpn', 'inet', 'manifest-support'],
             "min_mem_gib": 0,
             "min_cpu_threads": 0,
             "min_storage_gib": 0,
@@ -263,7 +266,8 @@ class Golem:
 
         scoring_function = STRATEGY_SCORING_FUNCTION[strategy]
         offer_scorer = SimpleScorer(scoring_function, min_proposals=10, max_wait=timedelta(seconds=3))
-        payload = await vm.manifest(**params)
+        payload = ManifestVmPayload(**params)
+        # payload = await vm.manifest(**params)
         return payload, offer_scorer
 
     ########################################################
@@ -328,9 +332,9 @@ class Golem:
         )
 
     def _payload_text(self, payload):
-        mem = payload.constraints.min_mem_gib
-        disk = payload.constraints.min_storage_gib
-        cores = payload.constraints.min_cpu_threads
+        mem = payload.min_mem_gib
+        disk = payload.min_storage_gib
+        cores = payload.min_cpu_threads
 
         constraint_parts = []
         if mem:

@@ -60,6 +60,8 @@ class RemotePython:
         self._connection_uri = f"{net_api_ws}/net/{network.id}/tcp/{ip}/5000"
         self._auth_header = {"Authorization": f"Bearer {self.activity.node._api_config.app_key}"}
         self._ws = await websockets.connect(self._connection_uri, extra_headers=self._auth_header)
+        print('Connected with WS')
+        # , ping_timeout = None, max_size = 20_000_000
 
     async def execute(self, code):
         if self._ws is None:
