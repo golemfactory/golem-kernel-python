@@ -130,7 +130,7 @@ class Golem:
                 yield f"Searching for {self._payload_text(payload)}...\n"
                 async for out in self._connect(payload, offer_scorer):
                     yield out
-                await self._set_tmp_dir()
+                await self._set_env_vars()
         elif code.startswith('%disconnect'):
             if not self.connected:
                 yield "No connected provider"
@@ -154,8 +154,10 @@ class Golem:
         if "result" in result:
             yield result["result"], True
 
-    async def _set_tmp_dir(self):
+    async def _set_env_vars(self):
         async for _ in self.execute("%set_env TMPDIR=/usr/src/app/output/"):
+            pass
+        async for _ in self.execute("%set_env PIP_PROGRESS_BAR=off"):
             pass
 
     def _get_funds(self, network):

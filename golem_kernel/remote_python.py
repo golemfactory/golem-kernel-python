@@ -50,7 +50,8 @@ class RemotePython:
         net_api_ws = urlparse(url)._replace(scheme="ws").geturl()
         self._connection_uri = f"{net_api_ws}/net/{network.id}/tcp/{ip}/5000"
         self._auth_header = {"Authorization": f"Bearer {self.activity.node._api_config.app_key}"}
-        self._ws = await websockets.connect(self._connection_uri, extra_headers=self._auth_header)
+        self._ws = await websockets.connect(self._connection_uri, extra_headers=self._auth_header, ping_timeout=None,
+                                            max_size=5_000_000)
 
     async def execute(self, code):
         if self._ws is None:
@@ -70,11 +71,18 @@ class RemotePython:
         #   NOTE: We always send a single message and receive a single response, so this simplified
         #         implementation should be OK - we never receive anything after the message_len.
         init_data = await self._ws.recv()
+        with open('out.txt', 'a') as f:
+            f.write(str(init_data))
 
         message_len, data = init_data.split(b' ', maxsplit=1)
         message_len = int(message_len.decode())
 
         while len(data) < message_len:
-            data += await self._ws.recv()
+            data_incr = await self._ws.recv()
+
+            with open('out.txt', 'a') as f:
+                f.write(str(data_incr))
+
+            data += data_incr
 
         return data
