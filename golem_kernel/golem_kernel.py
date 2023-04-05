@@ -28,13 +28,11 @@ class GolemKernel(Kernel):
 
             if is_result:
                 if content['type'] == 'display_data':
-                    execute_result_content = {
-                        # TODO: do przetestowania
+                    display_data_content = {
                         'data': content['content'],
-                        'execution_count': self.execution_count,
                         'metadata': {},  # this is necessary for jupyterlab, but not jupyter notebook
                     }
-                    self.send_response(self.iopub_socket, 'display_data', execute_result_content)
+                    self.send_response(self.iopub_socket, 'display_data', display_data_content)
                 elif content['type'] == 'execute_result':
                     execute_result_content = {
                         'data': {'text/plain': content['content']},

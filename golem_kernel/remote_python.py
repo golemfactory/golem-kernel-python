@@ -2,6 +2,7 @@ import asyncio
 import websockets
 from urllib.parse import urlparse
 import json
+# import pprint
 
 from golem_core import commands
 
@@ -71,8 +72,8 @@ class RemotePython:
         #   NOTE: We always send a single message and receive a single response, so this simplified
         #         implementation should be OK - we never receive anything after the message_len.
         init_data = await self._ws.recv()
-        with open('out.txt', 'a') as f:
-            f.write(str(init_data))
+        # with open('out.txt', 'a') as f:
+        #     pprint.pprint(init_data, f)
 
         message_len, data = init_data.split(b' ', maxsplit=1)
         message_len = int(message_len.decode())
@@ -80,8 +81,8 @@ class RemotePython:
         while len(data) < message_len:
             data_incr = await self._ws.recv()
 
-            with open('out.txt', 'a') as f:
-                f.write(str(data_incr))
+            # with open('out.txt', 'a') as f:
+            #     pprint.pprint(data_incr, f)
 
             data += data_incr
 

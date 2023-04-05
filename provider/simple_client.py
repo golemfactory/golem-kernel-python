@@ -1,6 +1,6 @@
-from collections import defaultdict
 from queue import Empty
 from time import sleep
+# import pprint
 
 from jupyter_client.blocking import BlockingKernelClient
 
@@ -24,7 +24,7 @@ class SimpleClient:
         """Execute code. Get stdout and result, if any."""
 
         self.kc.execute(code)
-        data = defaultdict(str)
+        data = {}
         while True:
             try:
                 reply = self.kc.get_iopub_msg(timeout=1)
@@ -33,12 +33,20 @@ class SimpleClient:
                 continue
 
             finished, reply_data = self._parse_msg(reply)
-            for key, val in reply_data.items():
-                data[key] += val
+            if 'stdout' in reply_data:
+                if 'stdout' not in data:
+                    data['stdout'] = ''
+                data['stdout'] += reply_data['stdout']
+            elif 'result' in reply_data:
+                data['result'] = reply_data['result']
+
             if finished:
                 return data
 
     def _parse_msg(self, msg):
+        # with open('/usr/src/app/output/kernel_out.txt', 'a') as f:
+        #     pprint.pprint(msg, f)
+
         data = {}
         finished = False
         type_, content = msg['msg_type'], msg['content']
@@ -58,8 +66,5 @@ class SimpleClient:
             }
         elif type_ == 'status' and content['execution_state'] == 'idle':
             finished = True
-
-        with open('/usr/src/app/output/kernel_out.txt', 'a') as f:
-            f.write(str(msg))
 
         return finished, data
