@@ -22,19 +22,28 @@ class GolemKernel(Kernel):
     async def do_execute(
         self, code, silent, store_history=True, user_expressions=None, allow_stdin=False
     ):
-        async for text, is_result in self._golem.execute(code):
+        async for content, is_result in self._golem.execute(code):
             if silent:
                 continue
 
             if is_result:
-                execute_result_content = {
-                    'data': {'text/plain': text},
-                    'execution_count': self.execution_count,
-                    'metadata': {},  # this is necessary for jupyterlab, but not jupyter notebook
-                }
-                self.send_response(self.iopub_socket, 'execute_result', execute_result_content)
+                if content['type'] == 'display_data':
+                    execute_result_content = {
+                        # TODO: do przetestowania
+                        'data': content['content'],
+                        'execution_count': self.execution_count,
+                        'metadata': {},  # this is necessary for jupyterlab, but not jupyter notebook
+                    }
+                    self.send_response(self.iopub_socket, 'display_data', execute_result_content)
+                elif content['type'] == 'execute_result':
+                    execute_result_content = {
+                        'data': {'text/plain': content['content']},
+                        'execution_count': self.execution_count,
+                        'metadata': {},  # this is necessary for jupyterlab, but not jupyter notebook
+                    }
+                    self.send_response(self.iopub_socket, 'execute_result', execute_result_content)
             else:
-                stream_content = {'name': 'stdout', 'text': text}
+                stream_content = {'name': 'stdout', 'text': content}
                 self.send_response(self.iopub_socket, 'stream', stream_content)
 
         return {

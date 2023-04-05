@@ -47,8 +47,19 @@ class SimpleClient:
         elif type_ == 'error':
             data['stdout'] = "\n".join(content['traceback'])
         elif type_ == 'execute_result':
-            data['result'] = content['data']['text/plain']
+            data['result'] = {
+                'type': 'execute_result',
+                'content': content['data']['text/plain'],
+            }
+        elif type_ == 'display_data':
+            data['result'] = {
+                'type': 'display_data',
+                'content': content['data'],
+            }
         elif type_ == 'status' and content['execution_state'] == 'idle':
             finished = True
+
+        with open('/usr/src/app/output/kernel_out.txt', 'a') as f:
+            f.write(str(msg))
 
         return finished, data
