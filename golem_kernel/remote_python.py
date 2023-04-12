@@ -2,7 +2,7 @@ import asyncio
 import websockets
 from urllib.parse import urlparse
 import json
-# import pprint
+import pprint
 
 from golem_core import commands
 
@@ -56,10 +56,14 @@ class RemotePython:
 
     async def execute(self, code):
         if self._ws is None:
-            raise RuntimeError("RemotePython didn't start succesfully")
+            raise RuntimeError("RemotePython didn't start successfully")
 
         await self._send(code)
+        with open('out.txt', 'a') as f:
+            f.write(f'-----BREAKPOINT 3.8-----sent: {str(code)}')
         response = await self._receive()
+        with open('out.txt', 'a') as f:
+            f.write(f'resp: {str(response)}')
         return json.loads(response.decode())
 
     async def _send(self, code):
@@ -72,8 +76,8 @@ class RemotePython:
         #   NOTE: We always send a single message and receive a single response, so this simplified
         #         implementation should be OK - we never receive anything after the message_len.
         init_data = await self._ws.recv()
-        # with open('out.txt', 'a') as f:
-        #     pprint.pprint(init_data, f)
+        with open('out.txt', 'a') as f:
+            pprint.pprint(init_data, f)
 
         message_len, data = init_data.split(b' ', maxsplit=1)
         message_len = int(message_len.decode())
@@ -81,8 +85,8 @@ class RemotePython:
         while len(data) < message_len:
             data_incr = await self._ws.recv()
 
-            # with open('out.txt', 'a') as f:
-            #     pprint.pprint(data_incr, f)
+            with open('out.txt', 'a') as f:
+                pprint.pprint(data_incr, f)
 
             data += data_incr
 

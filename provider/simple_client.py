@@ -1,6 +1,6 @@
 from queue import Empty
 from time import sleep
-# import pprint
+import pprint
 
 from jupyter_client.blocking import BlockingKernelClient
 
@@ -44,8 +44,8 @@ class SimpleClient:
                 return data
 
     def _parse_msg(self, msg):
-        # with open('/usr/src/app/output/kernel_out.txt', 'a') as f:
-        #     pprint.pprint(msg, f)
+        with open('/usr/src/app/output/kernel_out.txt', 'a') as f:
+            pprint.pprint(msg, f)
 
         data = {}
         finished = False

@@ -14,9 +14,9 @@
         "os": "linux"
       },
       "urls": [
-        "http://girepo.dev.golem.network:8000/docker-golem-kernel-gpu-latest-84a101d908.gvmi"
+        "http://girepo.dev.golem.network:8000/docker-golem-kernel-gpu-latest-c7c21d7773.gvmi"
       ],
-      "hash": "sha3:1b3bb068d3917de4322bf19c78798913ec7550515acdc11691726617"
+      "hash": "sha3:dc2dcfa5e5713ba07f468d81b401bf6860f2a52687cb49d44fc0aa62"
     }
   ],
   "compManifest": {
@@ -33,7 +33,9 @@
           "protocols": ["https"],
           "urls": [
             "https://files.pythonhosted.org",
-            "https://pypi.org"
+            "https://pypi.org",
+            "https://drive.google.com",
+            "https://googlehosted.l.googleusercontent.com"
           ]
         }
       }

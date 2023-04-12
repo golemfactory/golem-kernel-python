@@ -81,6 +81,8 @@ class Golem:
         elif not self.connected:
             yield f"Provider not connected. Available commands: {', '.join(local_commands)}.", False
         else:
+            with open('out.txt', 'a') as f:
+                f.write('-----BREAKPOINT 3.75-----')
             async for out in self._run_remote_command(code):
                 yield out
 
@@ -130,7 +132,8 @@ class Golem:
                 yield f"Searching for {self._payload_text(payload)}...\n"
                 async for out in self._connect(payload, offer_scorer):
                     yield out
-                await self._set_env_vars()
+                #     TODO: to chyba trzeba jakoś inaczej wywołać bo coś psuje stabilność
+                # await self._set_env_vars()
         elif code.startswith('%disconnect'):
             if not self.connected:
                 yield "No connected provider"
@@ -149,14 +152,20 @@ class Golem:
 
     async def _run_remote_command(self, code):
         result = await self._remote_python.execute(code)
+        with open('out.txt', 'a') as f:
+            f.write('-----BREAKPOINT 3.9-----')
         if "stdout" in result:
             yield result["stdout"], False
         if "result" in result:
             yield result["result"], True
 
     async def _set_env_vars(self):
+        with open('out.txt', 'a') as f:
+            f.write('-----BREAKPOINT 3-----')
         async for _ in self.execute("%set_env TMPDIR=/usr/src/app/output/"):
             pass
+        with open('out.txt', 'a') as f:
+            f.write('-----BREAKPOINT 4-----')
         async for _ in self.execute("%set_env PIP_PROGRESS_BAR=off"):
             pass
 
@@ -185,7 +194,11 @@ class Golem:
             yield f"Engine is starting... "
             try:
                 remote_python = RemotePython(activity)
-                await asyncio.wait_for(remote_python.start(), timeout=3600)
+                with open('out.txt', 'a') as f:
+                    f.write('-----BREAKPOINT 1-----')
+                await asyncio.wait_for(remote_python.start(), timeout=180)
+                with open('out.txt', 'a') as f:
+                    f.write('-----BREAKPOINT 2-----')
                 break
             except Exception:
                 yield "failed.\n"
