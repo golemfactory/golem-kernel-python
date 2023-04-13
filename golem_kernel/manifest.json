@@ -35,7 +35,14 @@
             "https://files.pythonhosted.org",
             "https://pypi.org",
             "https://drive.google.com",
-            "https://googlehosted.l.googleusercontent.com"
+            "https://googlehosted.l.googleusercontent.com",
+            "https://doc-0o-a8-docs.googleusercontent.com",
+            "https://docs.google.com",
+            "https://www.dropbox.com",
+            "https://edge-block-www-env.dropbox-dns.com",
+            "https://api.dropboxapi.com",
+            "https://content.dropboxapi.com",
+            "https://notify.dropboxapi.com"
           ]
         }
       }
