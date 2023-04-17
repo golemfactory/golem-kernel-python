@@ -1,6 +1,20 @@
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+from urllib.parse import urlparse
+from urllib.parse import parse_qs
+
 from ipykernel.kernelbase import Kernel
 
 from .golem import Golem
+
+
+class GoogleAuthHandler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        parsed = urlparse(self.path)
+        code = parse_qs(parsed.query)['code'][0]
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(bytes(f"Code: {code}", "utf-8"))
+
 
 class GolemKernel(Kernel):
     implementation = 'GolemKernel'
@@ -17,6 +31,8 @@ class GolemKernel(Kernel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # self.http_server = ThreadingHTTPServer(('127.0.0.1', 9000), GoogleAuthHandler)
+        # self.http_server.serve_forever()
         self._golem = Golem()
 
     async def do_execute(
@@ -52,4 +68,5 @@ class GolemKernel(Kernel):
         }
 
     async def do_shutdown(self, restart):
+        # self.http_server.shutdown()
         await self._golem.aclose()

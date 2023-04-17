@@ -1,0 +1,16 @@
+client_config_backend: settings
+client_config:
+  client_id: 367116221053-7n0vf5akeru7on6o2fjinrecpdoe99eg.apps.googleusercontent.com
+  client_secret: 1qsNodXNaWq1mQuBjUjmvhoO
+  auth_uri: https://accounts.google.com/o/oauth2/auth
+  token_uri: https://accounts.google.com/o/oauth2/token
+  redirect_uri: http://localhost:9000
+
+save_credentials: True
+save_credentials_backend: file
+save_credentials_file: credentials.json
+
+get_refresh_token: True
+
+oauth_scope:
+  - https://www.googleapis.com/auth/drive

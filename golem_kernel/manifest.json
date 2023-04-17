@@ -14,9 +14,9 @@
         "os": "linux"
       },
       "urls": [
-        "http://girepo.dev.golem.network:8000/docker-golem-kernel-gpu-latest-c7c21d7773.gvmi"
+        "http://girepo.dev.golem.network:8000/docker-golem-kernel-gpu-latest-00683fc5f9.gvmi"
       ],
-      "hash": "sha3:dc2dcfa5e5713ba07f468d81b401bf6860f2a52687cb49d44fc0aa62"
+      "hash": "sha3:8628d76b167ea0a2ae9dcd7ca9c23ad9e3a98b149f9983ce33f00dcc"
     }
   ],
   "compManifest": {
@@ -34,10 +34,9 @@
           "urls": [
             "https://files.pythonhosted.org",
             "https://pypi.org",
-            "https://drive.google.com",
-            "https://googlehosted.l.googleusercontent.com",
-            "https://doc-0o-a8-docs.googleusercontent.com",
-            "https://docs.google.com",
+            "https://accounts.google.com",
+            "https://www.googleapis.com",
+            "https://oauth2.googleapis.com",
             "https://www.dropbox.com",
             "https://edge-block-www-env.dropbox-dns.com",
             "https://api.dropboxapi.com",

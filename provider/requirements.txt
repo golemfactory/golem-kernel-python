@@ -1,2 +1,2 @@
 jupyter==1.0.0
-gdown==4.7.1
+PyDrive2==1.15.3
