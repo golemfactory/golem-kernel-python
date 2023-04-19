@@ -28,6 +28,7 @@ class RemotePython:
             commands.Start(),
             commands.Run('/sbin/ifconfig eth1 mtu 1500 up'),
             commands.Run('cp -R /usr/src/app/venv /usr/src/app/output/venv'),
+            commands.Run('echo "142.250.75.13    accounts.google.com" >> /etc/hosts'),
         )
         #   NOTE: We don't set any timeout here because caller of RemotePython.start() should
         #         have their own timeout either way.
