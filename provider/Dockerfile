@@ -1,19 +1,18 @@
-FROM python:3.8-slim
+FROM maugnorbert/docker_golem_cuda_base
 
-#   The only purpose of this VOLUME is development/debuging,
-#   thanks to it we can send a new `server.py` or `simple_client.py` file
-#   and avoid rebuilding images.
-VOLUME /ttt 
+WORKDIR /usr/src/app
+VOLUME /usr/src/app/output
 
-WORKDIR /python_server
+RUN apt-get update && apt-get install -y python3-pip python3.8-venv pciutils curl net-tools
 
+COPY settings.yaml .
 COPY requirements.txt .
+RUN python3 -m venv /usr/src/app/venv
 
-#   the only purpose of numpy here is demo
-RUN python3 -m pip install numpy
-
-RUN python3 -m pip install -r requirements.txt
+RUN /usr/src/app/venv/bin/pip install wheel setuptools
+RUN /usr/src/app/venv/bin/pip install -r requirements.txt
 RUN rm requirements.txt
 
 COPY server.py .
 COPY simple_client.py .
+COPY gdrive.py .
