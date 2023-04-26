@@ -14,9 +14,9 @@
         "os": "linux"
       },
       "urls": [
-        "http://girepo.dev.golem.network:8000/docker-golem-kernel-gpu-latest-00683fc5f9.gvmi"
+        "http://girepo.dev.golem.network:8000/docker-golem-kernel-gpu-latest-d2f0bc1ef2.gvmi"
       ],
-      "hash": "sha3:8628d76b167ea0a2ae9dcd7ca9c23ad9e3a98b149f9983ce33f00dcc"
+      "hash": "sha3:5329bbbd9f8a17e4f89d3b9f9255f7f3fa73d927cb292b9b10220f78"
     }
   ],
   "compManifest": {
