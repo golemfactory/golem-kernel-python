@@ -6,12 +6,10 @@ from pathlib import Path
 from random import random
 from subprocess import check_output, check_call
 
-from golem_core import GolemNode
-from golem_core.mid import (
-    Chain, Map, Buffer, SimpleScorer,
-    default_negotiate, default_create_agreement, default_create_activity
-)
-from golem_core.payload.vm import ManifestVmPayload
+from golem_core.core.golem_node import GolemNode
+from golem_core.pipeline import Chain, Map, Buffer
+from golem_core.core.market_api import ManifestVmPayload
+from golem_core.core.market_api.pipeline import default_negotiate, default_create_agreement, default_create_activity
 
 from .remote_python import RemotePython
 
@@ -70,19 +68,21 @@ class Golem:
         This will probably change in a significant way if we decide to pass raw messages
         from the kernel.
         """
-        local_commands = ('%status', '%fund', '%budget', '%connect', '%disconnect')
+        local_commands = ('%status', '%fund', '%budget', '%connect', '%disconnect', '%upload', '%download')
 
         if any(code.startswith(command) for command in local_commands):
             try:
                 async for out in self._run_local_command(code):
                     yield out, False
             except Exception as e:
-                yield f"Error running a local command: {e}", False
+                import traceback
+                tb = traceback.format_exc()
+                yield f"Error running a local command: {e}, {tb}", False
         elif not self.connected:
             yield f"Provider not connected. Available commands: {', '.join(local_commands)}.", False
         else:
             with open('out.txt', 'a') as f:
-                f.write('-----BREAKPOINT 3.75-----')
+                f.write('-----RUNNING REMOTE COMMAND-----\n')
             async for out in self._run_remote_command(code):
                 yield out
 
@@ -147,6 +147,21 @@ class Golem:
                 else:
                     yield f"Total cost: {invoice_amount}\n"
                 yield self._get_budget_text()
+        elif code.startswith('%upload'):
+            if not self.connected:
+                yield "No connected provider."
+            else:
+                try:
+                    file_path = code.split(maxsplit=1)[1]
+                except IndexError:
+                    yield "Provide file path to upload."
+                else:
+                    if Path(file_path).exists():
+                        yield "Sending...\n"
+                        await self._remote_python.upload_file(file_path)
+                        yield "File uploaded.\n"
+                    else:
+                        yield "File does not exist."
         else:
             raise ValueError(f"Unknown command: {code}")
 
@@ -161,11 +176,11 @@ class Golem:
 
     async def _set_env_vars(self):
         with open('out.txt', 'a') as f:
-            f.write('-----BREAKPOINT 3-----')
+            f.write('-----RUNNING SET ENV TMPDIR-----\n')
         async for _ in self.execute("%set_env TMPDIR=/usr/src/app/output/"):
             pass
         with open('out.txt', 'a') as f:
-            f.write('-----BREAKPOINT 4-----')
+            f.write('-----RUNNING SET ENV PIP_PROGRESS_BAR-----\n')
         async for _ in self.execute("%set_env PIP_PROGRESS_BAR=off"):
             pass
 
@@ -194,11 +209,7 @@ class Golem:
             yield f"Engine is starting... "
             try:
                 remote_python = RemotePython(activity)
-                with open('out.txt', 'a') as f:
-                    f.write('-----BREAKPOINT 1-----')
                 await asyncio.wait_for(remote_python.start(), timeout=180)
-                with open('out.txt', 'a') as f:
-                    f.write('-----BREAKPOINT 2-----')
                 break
             except Exception:
                 yield "failed.\n"
@@ -207,12 +218,12 @@ class Golem:
         yield "ready."
         self._remote_python = remote_python
 
-    async def _get_activity(self, payload, offer_scorer):
+    async def _get_activity(self, payload, offer_scorer=None):
         demand = await self._golem_node.create_demand(payload, allocations=[self._allocation])
 
         chain = Chain(
             demand.initial_proposals(),
-            offer_scorer,
+            # offer_scorer,
             Map(negotiate),
             Map(default_create_agreement),
             Map(default_create_activity),
@@ -279,7 +290,8 @@ class Golem:
                 raise ValueError(f"Unknown option: {part}")
 
         scoring_function = STRATEGY_SCORING_FUNCTION[strategy]
-        offer_scorer = SimpleScorer(scoring_function, min_proposals=10, max_wait=timedelta(seconds=3))
+        # offer_scorer = SimpleScorer(scoring_function, min_proposals=10, max_wait=timedelta(seconds=3))
+        offer_scorer = None
         payload = ManifestVmPayload(**params)
         # payload = await vm.manifest(**params)
         return payload, offer_scorer

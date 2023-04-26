@@ -1,10 +1,11 @@
+from pathlib import Path
 import asyncio
 import websockets
 from urllib.parse import urlparse
 import json
 import pprint
 
-from golem_core import commands
+from golem_core.core.activity_api import commands
 
 
 class RemotePython:
@@ -61,7 +62,7 @@ class RemotePython:
 
         await self._send(code)
         with open('out.txt', 'a') as f:
-            f.write(f'-----BREAKPOINT 3.8-----sent: {str(code)}')
+            f.write(f'-----AFTER SEND COMMAND TO REMOTE KERNEL-----sent: {str(code)}')
         response = await self._receive()
         with open('out.txt', 'a') as f:
             f.write(f'resp: {str(response)}')
@@ -92,3 +93,19 @@ class RemotePython:
             data += data_incr
 
         return data
+
+    async def upload_file(self, local_path):
+        batch = await self.activity.execute_commands(
+            commands.SendFile(local_path, f"/usr/src/app/output/{Path(local_path).name}"),
+        )
+        with open('out.txt', 'a') as f:
+            f.write('-----AFTER BATCH CREATION-----\n')
+        await batch.wait()
+        with open('out.txt', 'a') as f:
+            f.write('-----AFTER BATCH AWAIT-----\n')
+
+    async def download_file(self, remote_file):
+        batch = await self.activity.execute_commands(
+            commands.DownloadFile(f"/usr/src/app/output/{remote_file}", remote_file),
+        )
+        await batch.wait()
