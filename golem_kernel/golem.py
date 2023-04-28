@@ -162,6 +162,18 @@ class Golem:
                         yield "File uploaded.\n"
                     else:
                         yield "File does not exist."
+        elif code.startswith('%download'):
+            if not self.connected:
+                yield "No connected provider."
+            else:
+                try:
+                    file_path = code.split(maxsplit=1)[1]
+                except IndexError:
+                    yield "Provide file path to upload."
+                else:
+                    yield "Downloading...\n"
+                    await self._remote_python.download_file(file_path)
+                    yield "File downloaded.\n"
         else:
             raise ValueError(f"Unknown command: {code}")
 

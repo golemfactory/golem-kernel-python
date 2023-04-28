@@ -4,7 +4,7 @@ client_config:
   client_secret: 1qsNodXNaWq1mQuBjUjmvhoO
   auth_uri: https://accounts.google.com/o/oauth2/auth
   token_uri: https://accounts.google.com/o/oauth2/token
-  redirect_uri: http://localhost:9000
+  redirect_uri: https://jupyter.golem.network # must be enabled in GCP project settings
 
 save_credentials: True
 save_credentials_backend: file

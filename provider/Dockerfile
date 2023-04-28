@@ -5,7 +5,6 @@ VOLUME /usr/src/app/output
 
 RUN apt-get update && apt-get install -y python3-pip python3.8-venv pciutils curl net-tools
 
-COPY settings.yaml .
 COPY requirements.txt .
 RUN python3 -m venv /usr/src/app/venv
 
@@ -16,3 +15,4 @@ RUN rm requirements.txt
 COPY server.py .
 COPY simple_client.py .
 COPY gdrive.py .
+COPY settings.yaml .

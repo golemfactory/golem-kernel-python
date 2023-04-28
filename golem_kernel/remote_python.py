@@ -100,11 +100,7 @@ class RemotePython:
         batch = await self.activity.execute_commands(
             commands.SendFile(local_path, f"/usr/src/app/output/{Path(local_path).name}"),
         )
-        with open('out.txt', 'a') as f:
-            f.write('-----AFTER BATCH CREATION-----\n')
         await batch.wait()
-        with open('out.txt', 'a') as f:
-            f.write('-----AFTER BATCH AWAIT-----\n')
 
     async def download_file(self, remote_file):
         batch = await self.activity.execute_commands(
