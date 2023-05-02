@@ -1,5 +1,4 @@
 from pathlib import Path
-import asyncio
 import websockets
 from urllib.parse import urlparse
 import json
@@ -47,9 +46,10 @@ class RemotePython:
         )
         await batch.wait()
 
-        #   Wait a little while until server.py starts.
-        #   TODO: a better solution maybe?
-        await asyncio.sleep(3)
+        batch = await self.activity.execute_commands(
+            commands.Run('/usr/src/app/wait_for_server.sh'),
+        )
+        await batch.wait()
 
         url = network.node._api_config.net_url
         net_api_ws = urlparse(url)._replace(scheme="ws").geturl()

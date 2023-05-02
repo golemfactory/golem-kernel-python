@@ -13,6 +13,7 @@ RUN /usr/src/app/venv/bin/pip install -r requirements.txt
 RUN rm requirements.txt
 
 COPY server.py .
+COPY wait_for_server.sh .
 COPY simple_client.py .
 COPY gdrive.py .
 COPY settings.yaml .

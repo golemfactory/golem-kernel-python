@@ -7,6 +7,7 @@ from simple_client import SimpleClient
 HOST = ''
 PORT = 5000
 
+
 def start_kernel():
     cmd = ["/usr/src/app/output/venv/bin/jupyter", "kernel", "--kernel", "python3"]
     proc = subprocess.Popen(cmd, stderr=subprocess.PIPE)
@@ -15,6 +16,7 @@ def start_kernel():
     line = proc.stderr.readline()
     connection_file_name = line.decode().strip().split()[3]
     return connection_file_name
+
 
 def get_code(conn):
     #   NOTE: Code is sent only after previous code was fully processed, so this simplified
@@ -32,6 +34,7 @@ def get_code(conn):
 
     return data.decode()
 
+
 def send_result(conn, result):
     data = result.encode()
     bytes_len = len(data)
@@ -39,11 +42,18 @@ def send_result(conn, result):
 
     conn.sendall(full_data)
 
+
+def indicate_server_ready():
+    with open('/usr/src/app/output/server_status.txt', 'w') as f:
+        f.write('LOADED')
+
+
 def run_server():
     while True:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((HOST, PORT))
             s.listen(1)
+            indicate_server_ready()
             conn, addr = s.accept()
 
             connection_file_name = start_kernel()
