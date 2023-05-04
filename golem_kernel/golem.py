@@ -132,8 +132,6 @@ class Golem:
                 yield f"Searching for {self._payload_text(payload)}...\n"
                 async for out in self._connect(payload, offer_scorer):
                     yield out
-                #     TODO: to chyba trzeba jakoś inaczej wywołać bo coś psuje stabilność
-                # await self._set_env_vars()
         elif code.startswith('%disconnect'):
             if not self.connected:
                 yield "No connected provider"
@@ -186,16 +184,6 @@ class Golem:
         if "result" in result:
             yield result["result"], True
 
-    async def _set_env_vars(self):
-        with open('out.txt', 'a') as f:
-            f.write('-----RUNNING SET ENV TMPDIR-----\n')
-        async for _ in self.execute("%set_env TMPDIR=/usr/src/app/output/"):
-            pass
-        with open('out.txt', 'a') as f:
-            f.write('-----RUNNING SET ENV PIP_PROGRESS_BAR-----\n')
-        async for _ in self.execute("%set_env PIP_PROGRESS_BAR=off"):
-            pass
-
     def _get_funds(self, network):
         check_call(["yagna", "payment", "fund", "--network", network])
 
@@ -226,6 +214,12 @@ class Golem:
             except Exception:
                 yield "failed.\n"
                 asyncio.create_task(activity.parent.terminate())
+
+        # Set env vars
+        # Temp dir with a lot of storage
+        await remote_python.execute("%set_env TMPDIR=/usr/src/app/output/")
+        # Disabling Pip progress bar so that long-lasting installations do not send too much data
+        await remote_python.execute("%set_env PIP_PROGRESS_BAR=off")
 
         yield "ready."
         self._remote_python = remote_python
