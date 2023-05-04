@@ -20,3 +20,5 @@ jupyter = "1.0.0"
 websockets = "10.4"
 golem_core = { git = "https://github.com/golemfactory/golem-core-python", rev = "4e73b3b" }
 #golem_core = "0.1.0"
+pytimeparse = "1.1.8"
+humanize = "4.6.0"

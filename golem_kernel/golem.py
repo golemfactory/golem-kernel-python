@@ -10,10 +10,11 @@ from golem_core.core.golem_node import GolemNode
 from golem_core.pipeline import Chain, Map, Buffer
 from golem_core.core.market_api import ManifestVmPayload
 from golem_core.core.market_api.pipeline import default_negotiate, default_create_agreement, default_create_activity
+import humanize
+from pytimeparse import parse as parse_to_seconds
 
 from .remote_python import RemotePython
 
-DEFAULT_IMAGE_HASH = "5389c01c128f94f14653bc0b56822c22b4b3987737ef8f3c0ac61946"
 
 STATUS_TEMPLATE = '''\
 Connected as node {id_}
@@ -30,8 +31,10 @@ Connected to {provider_name} [{provider_id}]
     CPU: {cpu} cores
 '''
 
+
 async def negotiate(proposal):
     return await asyncio.wait_for(default_negotiate(proposal), timeout=5)
+
 
 async def bestprice_score(proposal):
     properties = proposal.data.properties
@@ -41,10 +44,14 @@ async def bestprice_score(proposal):
     coeffs = properties['golem.com.pricing.model.linear.coeffs']
     return 1 - (coeffs[0] + coeffs[1])
 
+
 async def random_score(proposal):
     return random()
 
 STRATEGY_SCORING_FUNCTION = {"bestprice": bestprice_score, "random": random_score}
+DEFAULT_SCORING_STRATEGY = "bestprice"
+DEFAULT_CONNECTION_TIMEOUT = timedelta(minutes=3)
+
 
 class Golem:
     def __init__(self):
@@ -128,9 +135,9 @@ class Golem:
                 except IndexError:
                     args_str = ''
 
-                payload, offer_scorer = await self._parse_connect_args(args_str)
+                payload, offer_scorer, timeout = await self._parse_connect_args(args_str)
                 yield f"Searching for {self._payload_text(payload)}...\n"
-                async for out in self._connect(payload, offer_scorer):
+                async for out in self._connect(payload, offer_scorer, timeout):
                     yield out
         elif code.startswith('%disconnect'):
             if not self.connected:
@@ -203,13 +210,14 @@ class Golem:
         self._allocation = await self._golem_node.create_allocation(amount, network)
         await self._allocation.get_data()
 
-    async def _connect(self, payload, offer_scorer):
+    async def _connect(self, payload, offer_scorer, timeout):
+        yield f"Will timeout in {humanize.naturaldelta(timeout)}.\n"
         async for activity in self._get_activity(payload, offer_scorer):
             yield self._provider_info_text(activity)
             yield f"Engine is starting... "
             try:
                 remote_python = RemotePython(activity)
-                await asyncio.wait_for(remote_python.start(), timeout=180)
+                await asyncio.wait_for(remote_python.start(), timeout=int(timeout.total_seconds()))
                 break
             except Exception:
                 yield "failed.\n"
@@ -263,44 +271,51 @@ class Golem:
     async def _parse_connect_args(self, text):
         """IN: raw text passed to connect. OUT: payload (or raises exception)."""
 
-
         manifest = open(Path(__file__).parent.joinpath("manifest.json"), "rb").read()
         manifest = base64.b64encode(manifest).decode("utf-8")
 
         params = {
             "manifest": manifest,
-            # "image_hash": DEFAULT_IMAGE_HASH,
             "capabilities": ['vpn', 'inet', 'manifest-support'],
             "min_mem_gib": 0,
             "min_cpu_threads": 0,
             "min_storage_gib": 0,
         }
-        strategy = "bestprice"
+        strategy = DEFAULT_SCORING_STRATEGY
+        connection_timeout = DEFAULT_CONNECTION_TIMEOUT
 
         parts = text.split()
         for part in parts:
-            # TODO: to remove if providing manifest
-            if part.startswith("image_hash="):
-                params["image_hash"] = part[11:]
-            elif part.startswith("mem>"):
+            # if part.startswith("image_hash="):
+            #     params["image_hash"] = part[11:]
+            if part.startswith("mem>"):
                 params["min_mem_gib"] = float(part[4:])
             elif part.startswith("cores>"):
                 params["min_cpu_threads"] = int(part[6:])
             elif part.startswith("disk>"):
                 params["min_storage_gib"] = float(part[5:])
-            elif part.startswith("strategy="):
-                strategy = part[9:]
-                if strategy not in STRATEGY_SCORING_FUNCTION:
-                    raise ValueError(f"Unknown strategy {part[9:]}")
+            elif part.startswith("timeout="):
+                parsed_seconds = parse_to_seconds(part[8:])
+                if parsed_seconds is None:
+                    raise ValueError(f"Unknown timeout format {part[8:]}")
+                else:
+                    connection_timeout = timedelta(seconds=parsed_seconds)
+            # elif part.startswith("strategy="):
+            #     strategy = part[9:]
+            #     if strategy not in STRATEGY_SCORING_FUNCTION:
+            #         raise ValueError(f"Unknown strategy {part[9:]}")
+            elif part.startswith("cuda="):
+                if part[5:].strip().lower() in {'yes', 'y', '1', 'true'}:
+                    params["capabilities"].append('cuda*')
             else:
                 raise ValueError(f"Unknown option: {part}")
 
         scoring_function = STRATEGY_SCORING_FUNCTION[strategy]
+        # Scorer not available in current golem_core library version
         # offer_scorer = SimpleScorer(scoring_function, min_proposals=10, max_wait=timedelta(seconds=3))
         offer_scorer = None
         payload = ManifestVmPayload(**params)
-        # payload = await vm.manifest(**params)
-        return payload, offer_scorer
+        return payload, offer_scorer, connection_timeout
 
     ########################################################
     #   Functions that change nothing, just return some text
@@ -367,6 +382,7 @@ class Golem:
         mem = payload.min_mem_gib
         disk = payload.min_storage_gib
         cores = payload.min_cpu_threads
+        cuda = 'cuda*' in payload.capabilities
 
         constraint_parts = []
         if mem:
@@ -375,6 +391,8 @@ class Golem:
             constraint_parts.append(f"DISK>={disk}gb")
         if cores:
             constraint_parts.append(f"CPU>={cores}")
+        if cuda:
+            constraint_parts.append(f"CUDA=yes")
 
         if constraint_parts:
             return "(" + " ".join(constraint_parts) + ")"
