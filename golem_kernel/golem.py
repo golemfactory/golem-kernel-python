@@ -24,6 +24,11 @@ Connected as node {id_}
 {budget}
 '''
 
+HELP_TEMPLATE = '''\
+Welcome message.
+Lorem ipsum dolor sit amet.
+'''
+
 PROVIDER_TEMPLATE = '''\
 Connected to {provider_name} [{provider_id}]
     RAM: {ram} GB
@@ -75,7 +80,7 @@ class Golem:
         This will probably change in a significant way if we decide to pass raw messages
         from the kernel.
         """
-        local_commands = ('%status', '%fund', '%budget', '%connect', '%disconnect', '%upload', '%download')
+        local_commands = ('%status', '%help', '%fund', '%budget', '%connect', '%disconnect', '%upload', '%download')
 
         if any(code.startswith(command) for command in local_commands):
             try:
@@ -109,6 +114,8 @@ class Golem:
     async def _run_local_command(self, code):
         if code == '%status':
             yield self._get_status_text()
+        elif code == '%help':
+            yield self._get_help_text()
         elif code.startswith('%fund'):
             network = code.split()[1]
             yield "Waiting for funds\n"
@@ -336,6 +343,9 @@ class Golem:
             polygon_status=self._get_network_status_text('polygon'),
             rinkeby_status=self._get_network_status_text('rinkeby'),
         )
+
+    def _get_help_text(self):
+        return HELP_TEMPLATE
 
     def _get_network_status_text(self, network):
         if network == 'polygon':

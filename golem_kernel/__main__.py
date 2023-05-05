@@ -14,6 +14,7 @@ KERNEL_DICT = {
     "language": "python",
 }
 
+
 def parse_install_argv():
     if len(sys.argv) == 2:
         return False
@@ -21,6 +22,7 @@ def parse_install_argv():
         return True
     else:
         raise ValueError(f"Incorrect args: {sys.argv[2:]}. Only accepted option is --user.")
+
 
 def install():
     args = {"kernel_name": "golem"}
@@ -47,4 +49,4 @@ if __name__ == '__main__':
     if sys.argv[1] == "install":
         install()
     else:
-        IPKernelApp.launch_instance(kernel_class=GolemKernel)
+        IPKernelApp.launch_instance(kernel_class=GolemKernel, code_to_run='%help')
