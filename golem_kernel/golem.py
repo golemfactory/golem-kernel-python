@@ -1,15 +1,17 @@
 import asyncio
 import base64
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 from random import random
 from subprocess import check_output, check_call
 
+import async_timeout
 from golem_core.core.golem_node import GolemNode
 from golem_core.pipeline import Chain, Map, Buffer
-from golem_core.core.market_api import ManifestVmPayload
+from golem_core.core.market_api import ManifestVmPayload, Demand, DemandBuilder
 from golem_core.core.market_api.pipeline import default_negotiate, default_create_agreement, default_create_activity
+from golem_core.core.market_api.resources.demand.demand_offer_base import defaults as dobm_defaults
 import humanize
 from pytimeparse import parse as parse_to_seconds
 
@@ -35,6 +37,7 @@ Connected to {provider_name} [{provider_id}]
     RAM: {ram} GB
     DISK: {disk} GB
     CPU: {cpu} cores
+    GPU: {gpu}
 '''
 
 
@@ -192,8 +195,6 @@ class Golem:
 
     async def _run_remote_command(self, code):
         result = await self._remote_python.execute(code)
-        with open('out.txt', 'a') as f:
-            f.write('-----BREAKPOINT 3.9-----')
         if "stdout" in result:
             yield result["stdout"], False
         if "result" in result:
@@ -220,17 +221,24 @@ class Golem:
 
     async def _connect(self, payload, offer_scorer, timeout):
         yield f"Will timeout in {humanize.naturaldelta(timeout)}.\n"
-        async for activity in self._get_activity(payload, offer_scorer):
-            yield self._provider_info_text(activity)
-            yield f"Engine is starting... "
-            try:
-                remote_python = RemotePython(activity)
-                await asyncio.wait_for(remote_python.start(), timeout=int(timeout.total_seconds()))
-                break
-            except Exception:
-                yield "failed.\n"
-                asyncio.create_task(activity.parent.terminate())
+        try:
+            async with async_timeout.timeout(int(timeout.total_seconds())):
 
+                async for activity in self._get_activity(payload, offer_scorer):
+                    yield self._provider_info_text(activity)
+                    yield f"Engine is starting... "
+                    try:
+                        remote_python = RemotePython(activity)
+                        yield "Start"
+                        await remote_python.start()
+                        yield "After start"
+                        break
+                    except Exception:
+                        yield "failed.\n"
+                        asyncio.create_task(activity.parent.terminate())
+        except asyncio.Timeout:
+            yield "reached timeout."
+            return
         # Set env vars
         # Temp dir with a lot of storage
         await remote_python.execute(f"%set_env TMPDIR={WORKDIR_PATH}")
@@ -241,7 +249,18 @@ class Golem:
         self._remote_python = remote_python
 
     async def _get_activity(self, payload, offer_scorer=None):
-        demand = await self._golem_node.create_demand(payload, allocations=[self._allocation])
+        # demand = await self._golem_node.create_demand(payload, allocations=[self._allocation], autostart=True)
+
+        expiration = datetime.now(timezone.utc) + timedelta(minutes=3)
+        builder = DemandBuilder()
+        await builder.add(dobm_defaults.Activity(expiration=expiration, multi_activity=True, timeout_secs=60))
+        # TODO: subnet
+        await builder.add(dobm_defaults.NodeInfo(subnet_tag='kernel-test'))
+
+        await builder.add(payload)
+        await self._golem_node._add_builder_allocations(builder, [self._allocation])
+        demand = await Demand.create_from_properties_constraints(self._golem_node, builder.properties, builder.constraints)
+        demand.start_collecting_events()
 
         chain = Chain(
             demand.initial_proposals(),
@@ -314,7 +333,7 @@ class Golem:
             #         raise ValueError(f"Unknown strategy {part[9:]}")
             elif part.startswith("cuda="):
                 if part[5:].strip().lower() in {'yes', 'y', '1', 'true'}:
-                    params["capabilities"].append('cuda*')
+                    params["capabilities"].append('cuda')
             else:
                 raise ValueError(f"Unknown option: {part}")
 
@@ -381,19 +400,26 @@ class Golem:
         proposal_data = activity.parent.parent.data
         properties = proposal_data.properties
 
+        cuda_card = next((cap.split(',', 1)[1].strip()
+                          for cap in properties['golem.runtime.capabilities']
+                          if cap.startswith('cuda,')),
+                         None)
+        gpu = cuda_card if cuda_card else 'None'
+
         return PROVIDER_TEMPLATE.format(
             provider_id=proposal_data.issuer_id,
             provider_name=properties['golem.node.id.name'],
             cpu=properties['golem.inf.cpu.cores'],
             ram=properties['golem.inf.mem.gib'],
             disk=properties['golem.inf.storage.gib'],
+            gpu=gpu,
         )
 
     def _payload_text(self, payload):
         mem = payload.min_mem_gib
         disk = payload.min_storage_gib
         cores = payload.min_cpu_threads
-        cuda = 'cuda*' in payload.capabilities
+        cuda = 'cuda' in payload.capabilities
 
         constraint_parts = []
         if mem:
@@ -403,7 +429,7 @@ class Golem:
         if cores:
             constraint_parts.append(f"CPU>={cores}")
         if cuda:
-            constraint_parts.append(f"CUDA=yes")
+            constraint_parts.append("CUDA=yes")
 
         if constraint_parts:
             return "(" + " ".join(constraint_parts) + ")"
