@@ -1,33 +1,6 @@
-from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
-from urllib.parse import urlparse
-from urllib.parse import parse_qs
-
-# from aiohttp import web
 from ipykernel.kernelbase import Kernel
 
 from .golem import Golem
-
-
-# async def show_code(request):
-#     code = 'ASBCD'
-#     return web.Response(text=f"{code}")
-
-# web_server = web.Application()
-# web_server.add_routes([web.get('/', show_code)])
-# web.run_app(web_server, host='127.0.0.1', port=9000)
-
-
-# class GoogleAuthHandler(SimpleHTTPRequestHandler):
-#     def do_GET(self):
-#         parsed = urlparse(self.path)
-#         code = parse_qs(parsed.query)['code'][0]
-#         self.send_response(200)
-#         self.end_headers()
-#         self.wfile.write(bytes(f"Code: {code}", "utf-8"))
-
-
-# http_server = ThreadingHTTPServer(('127.0.0.1', 9000), GoogleAuthHandler)
-# http_server.serve_forever()
 
 
 class GolemKernel(Kernel):

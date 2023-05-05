@@ -9,7 +9,7 @@ PORT = 5000
 
 
 def start_kernel():
-    cmd = ["/usr/src/app/output/venv/bin/jupyter", "kernel", "--kernel", "python3"]
+    cmd = ["/usr/src/app/workdir/venv/bin/jupyter", "kernel", "--kernel", "python3"]
     proc = subprocess.Popen(cmd, stderr=subprocess.PIPE)
 
     proc.stderr.readline()
@@ -44,7 +44,7 @@ def send_result(conn, result):
 
 
 def indicate_server_ready():
-    with open('/usr/src/app/output/server_status.txt', 'w') as f:
+    with open('/usr/src/app/workdir/server_status.txt', 'w') as f:
         f.write('LOADED')
 
 

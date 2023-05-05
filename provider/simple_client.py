@@ -25,16 +25,16 @@ class SimpleClient:
 
         self.kc.execute(code)
         data = {}
-        with open('/usr/src/app/output/kernel_out.txt', 'a') as f:
+        with open('/usr/src/app/workdir/kernel_out.txt', 'a') as f:
             pprint.pprint(f"Code: {code} executed", f)
         while True:
             try:
                 reply = self.kc.get_iopub_msg(timeout=1)
-                with open('/usr/src/app/output/kernel_out.txt', 'a') as f:
+                with open('/usr/src/app/workdir/kernel_out.txt', 'a') as f:
                     pprint.pprint(f"Reply: {reply}", f)
             except Empty:
                 sleep(0.1)
-                with open('/usr/src/app/output/kernel_out.txt', 'a') as f:
+                with open('/usr/src/app/workdir/kernel_out.txt', 'a') as f:
                     pprint.pprint(f"Empty reply", f)
                 continue
 
@@ -50,7 +50,7 @@ class SimpleClient:
                 return data
 
     def _parse_msg(self, msg):
-        with open('/usr/src/app/output/kernel_out.txt', 'a') as f:
+        with open('/usr/src/app/workdir/kernel_out.txt', 'a') as f:
             pprint.pprint(msg, f)
 
         data = {}

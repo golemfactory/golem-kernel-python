@@ -6,6 +6,8 @@ import pprint
 
 from golem_core.core.activity_api import commands
 
+from golem_kernel import WORKDIR_PATH
+
 
 class RemotePython:
     def __init__(self, activity):
@@ -27,7 +29,7 @@ class RemotePython:
             commands.Deploy(deploy_args),
             commands.Start(),
             commands.Run('/sbin/ifconfig eth1 mtu 1500 up'),
-            commands.Run('cp -R /usr/src/app/venv /usr/src/app/output/venv'),
+            commands.Run(f'cp -R /usr/src/app/venv {WORKDIR_PATH}venv'),
             commands.Run('echo "142.250.75.13    accounts.google.com" >> /etc/hosts'),
             commands.Run('echo "142.250.203.196    googleapis.com" >> /etc/hosts'),
             commands.Run('echo "142.250.186.202    oauth2.googleapis.com" >> /etc/hosts'),
@@ -37,12 +39,12 @@ class RemotePython:
         await batch.wait()
 
         batch = await self.activity.execute_commands(
-            commands.Run("sed -i 's=/usr/src/app/venv=/usr/src/app/output/venv=g' /usr/src/app/output/venv/bin/*"),
+            commands.Run(f"sed -i 's=/usr/src/app/venv={WORKDIR_PATH}venv=g' {WORKDIR_PATH}venv/bin/*"),
         )
         await batch.wait()
 
         batch = await self.activity.execute_commands(
-            commands.Run('nohup /usr/src/app/output/venv/bin/python3 server.py > /usr/src/app/output/out.txt 2>&1 &'),
+            commands.Run(f'nohup {WORKDIR_PATH}venv/bin/python3 server.py > {WORKDIR_PATH}out.txt 2>&1 &'),
         )
         await batch.wait()
 
@@ -98,12 +100,12 @@ class RemotePython:
 
     async def upload_file(self, local_path):
         batch = await self.activity.execute_commands(
-            commands.SendFile(local_path, f"/usr/src/app/output/{Path(local_path).name}"),
+            commands.SendFile(local_path, f"{WORKDIR_PATH}{Path(local_path).name}"),
         )
         await batch.wait()
 
     async def download_file(self, remote_file):
         batch = await self.activity.execute_commands(
-            commands.DownloadFile(f"/usr/src/app/output/{remote_file}", remote_file),
+            commands.DownloadFile(f"{WORKDIR_PATH}{remote_file}", remote_file),
         )
         await batch.wait()

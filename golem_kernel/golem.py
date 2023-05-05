@@ -14,6 +14,7 @@ import humanize
 from pytimeparse import parse as parse_to_seconds
 
 from .remote_python import RemotePython
+from golem_kernel import WORKDIR_PATH
 
 
 STATUS_TEMPLATE = '''\
@@ -232,7 +233,7 @@ class Golem:
 
         # Set env vars
         # Temp dir with a lot of storage
-        await remote_python.execute("%set_env TMPDIR=/usr/src/app/output/")
+        await remote_python.execute(f"%set_env TMPDIR={WORKDIR_PATH}")
         # Disabling Pip progress bar so that long-lasting installations do not send too much data
         await remote_python.execute("%set_env PIP_PROGRESS_BAR=off")
 

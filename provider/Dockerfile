@@ -1,7 +1,7 @@
 FROM maugnorbert/docker_golem_cuda_base
 
 WORKDIR /usr/src/app
-VOLUME /usr/src/app/output
+VOLUME /usr/src/app/workdir
 
 RUN apt-get update && apt-get install -y python3-pip python3.8-venv pciutils curl net-tools
 
