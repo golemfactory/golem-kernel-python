@@ -28,7 +28,7 @@ class RemotePython:
         batch = await self.activity.execute_commands(
             commands.Deploy(deploy_args),
             commands.Start(),
-            commands.Run('/sbin/ifconfig eth1 mtu 1500 up'),
+            commands.Run('/sbin/ifconfig eth1 mtu 1450 up'),
             commands.Run(f'cp -R /usr/src/app/venv {WORKDIR_PATH}venv'),
             commands.Run('echo "142.250.75.13    accounts.google.com" >> /etc/hosts'),
             commands.Run('echo "142.250.203.196    googleapis.com" >> /etc/hosts'),
