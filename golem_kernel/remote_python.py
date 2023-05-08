@@ -6,7 +6,7 @@ import pprint
 
 from golem_core.core.activity_api import commands
 
-from golem_kernel import WORKDIR_PATH
+from . import WORKDIR_PATH
 
 
 class RemotePython:

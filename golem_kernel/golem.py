@@ -1,6 +1,6 @@
 import asyncio
 import base64
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import json
 from pathlib import Path
 from random import random
@@ -9,14 +9,13 @@ from subprocess import check_output, check_call
 import async_timeout
 from golem_core.core.golem_node import GolemNode
 from golem_core.pipeline import Chain, Map, Buffer
-from golem_core.core.market_api import ManifestVmPayload, Demand, DemandBuilder
+from golem_core.core.market_api import ManifestVmPayload
 from golem_core.core.market_api.pipeline import default_negotiate, default_create_agreement, default_create_activity
-from golem_core.core.market_api.resources.demand.demand_offer_base import defaults as dobm_defaults
 import humanize
 from pytimeparse import parse as parse_to_seconds
 
 from .remote_python import RemotePython
-from golem_kernel import WORKDIR_PATH
+from . import WORKDIR_PATH
 
 
 STATUS_TEMPLATE = '''\
