@@ -48,6 +48,11 @@ def indicate_server_ready():
         f.write('LOADED')
 
 
+def indicate_kernel_ready():
+    with open('/usr/src/app/workdir/kernel_status.txt', 'w') as f:
+        f.write('LOADED')
+
+
 def run_server():
     while True:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -60,6 +65,7 @@ def run_server():
             client = SimpleClient(connection_file_name)
 
             with conn:
+                indicate_kernel_ready()
                 while True:
                     code = get_code(conn)
                     if code is None:

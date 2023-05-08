@@ -239,6 +239,9 @@ class Golem:
         except asyncio.Timeout:
             yield "reached timeout."
             return
+
+        await remote_python.wait_for_remote_kernel()
+
         # Set env vars
         # Temp dir with a lot of storage
         await remote_python.execute(f"%set_env TMPDIR={WORKDIR_PATH}")

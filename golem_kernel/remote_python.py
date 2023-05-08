@@ -60,16 +60,20 @@ class RemotePython:
         self._ws = await websockets.connect(self._connection_uri, extra_headers=self._auth_header, ping_timeout=None,
                                             max_size=5_000_000)
 
+    async def wait_for_remote_kernel(self):
+        batch = await self.activity.execute_commands(commands.Run('/usr/src/app/wait_for_kernel.sh'))
+        await batch.wait()
+
     async def execute(self, code):
         if self._ws is None:
             raise RuntimeError("RemotePython didn't start successfully")
 
         await self._send(code)
         with open('out.txt', 'a') as f:
-            f.write(f'-----AFTER SEND COMMAND TO REMOTE KERNEL-----sent: {str(code)}')
+            f.write(f'\n-----AFTER SEND COMMAND TO REMOTE KERNEL-----sent: {str(code)}')
         response = await self._receive()
         with open('out.txt', 'a') as f:
-            f.write(f'resp: {str(response)}')
+            f.write(f'\nresp: {str(response)}')
         return json.loads(response.decode())
 
     async def _send(self, code):

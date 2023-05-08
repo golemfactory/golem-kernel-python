@@ -14,6 +14,7 @@ RUN rm requirements.txt
 
 COPY server.py .
 COPY wait_for_server.sh .
+COPY wait_for_kernel.sh .
 COPY simple_client.py .
 COPY gdrive.py .
 COPY settings.yaml .
