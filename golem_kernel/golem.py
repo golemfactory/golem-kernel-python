@@ -207,9 +207,14 @@ class Golem:
             await self._allocation.release()
             self._allocation = None
 
+        async def on_event(event) -> None:
+            with open('out.txt', 'a') as f:
+                f.write(f'-----EVENT: {event} -----\n')
+
         if self._golem_node is None:
             self._loop = asyncio.get_running_loop()
             self._golem_node = GolemNode()
+            self._golem_node.event_bus.listen(on_event)
             await self._golem_node.start()
 
         check_call(["yagna", "payment", "init", "--network", network])
