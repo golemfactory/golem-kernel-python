@@ -59,7 +59,7 @@ async def random_score(proposal):
 
 STRATEGY_SCORING_FUNCTION = {"bestprice": bestprice_score, "random": random_score}
 DEFAULT_SCORING_STRATEGY = "bestprice"
-DEFAULT_CONNECTION_TIMEOUT = timedelta(minutes=3)
+DEFAULT_CONNECTION_TIMEOUT = timedelta(minutes=5)
 
 
 class Golem:
@@ -220,24 +220,22 @@ class Golem:
         await self._allocation.get_data()
 
     async def _connect(self, payload, offer_scorer, timeout):
-        yield f"Will timeout in {humanize.naturaldelta(timeout)}.\n"
+        yield f"Will try to connect for {humanize.naturaldelta(timeout)}.\n"
+
         try:
             async with async_timeout.timeout(int(timeout.total_seconds())):
-
                 async for activity in self._get_activity(payload, offer_scorer):
                     yield self._provider_info_text(activity)
                     yield f"Engine is starting... "
                     try:
                         remote_python = RemotePython(activity)
-                        yield "Start"
                         await remote_python.start()
-                        yield "After start"
                         break
                     except Exception:
                         yield "failed.\n"
                         asyncio.create_task(activity.parent.terminate())
-        except asyncio.Timeout:
-            yield "reached timeout."
+        except asyncio.TimeoutError:
+            yield "\nReached timeout."
             return
 
         await remote_python.wait_for_remote_kernel()
@@ -245,25 +243,14 @@ class Golem:
         # Set env vars
         # Temp dir with a lot of storage
         await remote_python.execute(f"%set_env TMPDIR={WORKDIR_PATH}")
-        # Disabling Pip progress bar so that long-lasting installations do not send too much data
+        # Disabling Pip progress bar so that long-lasting installations do not send too much data to stdout
         await remote_python.execute("%set_env PIP_PROGRESS_BAR=off")
 
         yield "ready."
         self._remote_python = remote_python
 
     async def _get_activity(self, payload, offer_scorer=None):
-        # demand = await self._golem_node.create_demand(payload, allocations=[self._allocation], autostart=True)
-
-        expiration = datetime.now(timezone.utc) + timedelta(minutes=3)
-        builder = DemandBuilder()
-        await builder.add(dobm_defaults.Activity(expiration=expiration, multi_activity=True, timeout_secs=60))
-        # TODO: subnet
-        await builder.add(dobm_defaults.NodeInfo(subnet_tag='kernel-test'))
-
-        await builder.add(payload)
-        await self._golem_node._add_builder_allocations(builder, [self._allocation])
-        demand = await Demand.create_from_properties_constraints(self._golem_node, builder.properties, builder.constraints)
-        demand.start_collecting_events()
+        demand = await self._golem_node.create_demand(payload, allocations=[self._allocation], autostart=True)
 
         chain = Chain(
             demand.initial_proposals(),
