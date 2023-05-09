@@ -156,7 +156,6 @@ class Golem:
                     args_str = ''
 
                 payload, offer_scorer, timeout = await self._parse_connect_args(args_str)
-                yield f"Searching for {self._payload_text(payload)}...\n"
                 async for out in self._connect(payload, offer_scorer, timeout):
                     yield out
         elif code.startswith('%disconnect'):
@@ -233,15 +232,18 @@ class Golem:
         await self._allocation.get_data()
 
     async def _connect(self, payload, offer_scorer, timeout):
-        yield f"Will try to connect for {humanize.naturaldelta(timeout)}.\n"
-
         try:
             async with async_timeout.timeout(int(timeout.total_seconds())):
-                yield "Demand created. Waiting for counter proposal...\n"
+                yield f"Progress: 1/3\n" \
+                      "    Demand created. Waiting for counter proposal.\n" \
+                      f"    Searching for {self._payload_text(payload)}...\n" \
+                      f"    Will try to connect for {humanize.naturaldelta(timeout)}.\n"
                 async for activity in self._get_activity(payload, offer_scorer):
-                    yield "Agreement created.\n"
-                    yield self._provider_info_text(activity)
-                    yield "Engine is starting... "
+                    yield "Progress: 2/3\n" \
+                          "    Agreement created.\n" \
+                          f"    {self._provider_info_text(activity)}" \
+                          "Progress: 3/3\n" \
+                          "    Engine is starting...\n"
                     try:
                         remote_python = RemotePython(activity)
                         await remote_python.start()
@@ -266,7 +268,7 @@ class Golem:
         except asyncio.TimeoutError:
             yield "\nReached timeout."
         else:
-            yield "ready."
+            yield "Ready."
 
         self._remote_python = remote_python
 
