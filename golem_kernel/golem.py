@@ -18,12 +18,23 @@ from .remote_python import RemotePython
 from . import WORKDIR_PATH
 
 
+import logging
+logger = logging.getLogger()
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
+
 STATUS_TEMPLATE = '''\
-Connected as node {id_}
+My node ID: {node_id}
+My wallet address: {node_id}
 {polygon_status}
 {rinkeby_status}
-
-{budget}
+Connection status: {connection_status}
+{provider_info}{connection_time}
 '''
 
 HELP_TEMPLATE = '''\
@@ -96,8 +107,7 @@ class Golem:
         elif not self.connected:
             yield f"Provider not connected. Available commands: {', '.join(local_commands)}.", False
         else:
-            with open('out.txt', 'a') as f:
-                f.write('-----RUNNING REMOTE COMMAND-----\n')
+            logger.info(f'-----RUNNING REMOTE COMMAND: {code}')
             async for out in self._run_remote_command(code):
                 yield out
 
@@ -208,8 +218,7 @@ class Golem:
             self._allocation = None
 
         async def on_event(event) -> None:
-            with open('out.txt', 'a') as f:
-                f.write(f'-----EVENT: {event} -----\n')
+            logger.info(f'-----EVENT: {event}')
 
         if self._golem_node is None:
             self._loop = asyncio.get_running_loop()
@@ -228,29 +237,37 @@ class Golem:
 
         try:
             async with async_timeout.timeout(int(timeout.total_seconds())):
+                yield "Demand created. Waiting for counter proposal...\n"
                 async for activity in self._get_activity(payload, offer_scorer):
+                    yield "Agreement created.\n"
                     yield self._provider_info_text(activity)
-                    yield f"Engine is starting... "
+                    yield "Engine is starting... "
                     try:
                         remote_python = RemotePython(activity)
                         await remote_python.start()
+                        self.connected_at = datetime.now()
                         break
                     except Exception:
                         yield "failed.\n"
                         asyncio.create_task(activity.parent.terminate())
+
+                # TODO: It still doesn't fix the problem.
+                #  Looks like there's something more on the provider that needs initialization
+                await remote_python.wait_for_remote_kernel()
+
+                #  Staying with timeout for now
+                await asyncio.sleep(10)
+
+                # Set env vars
+                # Temp dir with a lot of storage
+                await remote_python.execute(f"%set_env TMPDIR={WORKDIR_PATH}")
+                # Disabling Pip progress bar so that long-lasting installations do not send too much data to stdout
+                await remote_python.execute("%set_env PIP_PROGRESS_BAR=off")
         except asyncio.TimeoutError:
             yield "\nReached timeout."
-            return
+        else:
+            yield "ready."
 
-        await remote_python.wait_for_remote_kernel()
-
-        # Set env vars
-        # Temp dir with a lot of storage
-        await remote_python.execute(f"%set_env TMPDIR={WORKDIR_PATH}")
-        # Disabling Pip progress bar so that long-lasting installations do not send too much data to stdout
-        await remote_python.execute("%set_env PIP_PROGRESS_BAR=off")
-
-        yield "ready."
         self._remote_python = remote_python
 
     async def _get_activity(self, payload, offer_scorer=None):
@@ -265,6 +282,7 @@ class Golem:
             Buffer(size=1),
         )
         async for activity in chain:
+            logger.info(f'-----ACTIVITY YIELDED: {str(activity)}')
             yield activity
 
     async def _disconnect_and_pay(self):
@@ -346,16 +364,25 @@ class Golem:
         app_key = GolemNode().app_key
         for el in id_data:
             if el["key"] == app_key:
-                id_ = el["id"]
+                node_id = el["id"]
                 break
         else:
-            id_ = "[unknown node id]"  # this should not be possible
+            node_id = "[unknown node id]"  # this should not be possible
+
+        connection_status = 'Established' if self.connected else 'Disconnected'
+        activity = self._remote_python.activity if self.connected else None
+        provider_info = self._provider_info_text(activity) if self.connected else ''
+        connection_time = humanize.naturaldelta(datetime.now() - self.connected_at) if self.connected else ''
+        connection_time_str = f'Connection time: {connection_time}' if self.connected else ''
 
         return STATUS_TEMPLATE.format(
-            id_=id_,
-            budget=self._get_budget_text(),
+            node_id=node_id,
+            connection_status=connection_status,
+            # budget=self._get_budget_text(),
             polygon_status=self._get_network_status_text('polygon'),
             rinkeby_status=self._get_network_status_text('rinkeby'),
+            provider_info=provider_info,
+            connection_time=connection_time_str,
         )
 
     def _get_help_text(self):
