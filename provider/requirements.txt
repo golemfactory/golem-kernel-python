@@ -1,3 +1,4 @@
 jupyter==1.0.0
 PyDrive2==1.15.3
 dropbox==11.36.0
+tensorflow==2.12.0
