@@ -38,8 +38,24 @@ Connection status: {connection_status}
 '''
 
 HELP_TEMPLATE = '''\
-Welcome message.
-Lorem ipsum dolor sit amet.
+     _                   _                             ____       _                
+    | |_   _ _ __  _   _| |_ ___ _ __    ___  _ __    / ___| ___ | | ___ _ __ ___  
+ _  | | | | | '_ \| | | | __/ _ \ '__|  / _ \| '_ \  | |  _ / _ \| |/ _ \ '_ ` _ \ 
+| |_| | |_| | |_) | |_| | ||  __/ |    | (_) | | | | | |_| | (_) | |  __/ | | | | |
+ \___/ \__,_| .__/ \__, |\__\___|_|     \___/|_| |_|  \____|\___/|_|\___|_| |_| |_| version: 0.1.0
+            |_|    |___/                                                           
+
+Easy to use tool to run Your Jupyter Notebooks on the Golem Network!
+
+COMMANDS:    
+    %status		Shows current status of Jupyter on Golem
+    %fund		Requests for testnet funds, e.g. '%fund rinkeby'
+    %budget		Allocates GLM tokens for payments, e.g. '%budget rinkeby 2'
+    %connect		Looks for Provider which meets with defined criteria [mem|cores|disk|cuda], e.g. '%connect mem>1'				
+    %disconnect 	Disconnects from the currently active Provider
+    %download	 	Downloads file from Provider's ./workdir folder to local machine, e.g. '%download dataset.csv'
+    %upload		Uploads file from local machine into Provider's ./workdir folder, e.g. '%upload results.csv'
+    %help		Shows this message
 '''
 
 PROVIDER_TEMPLATE = '''\
