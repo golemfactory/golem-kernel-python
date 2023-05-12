@@ -175,12 +175,14 @@ class Golem:
                 async for out in self._connect(payload, offer_scorer, timeout):
                     yield out
         elif code.startswith('%disconnect'):
+            connection_time = self._get_connection_time()
             if not self.connected:
                 yield "No connected provider"
             else:
                 yield "Disconnecting... "
                 invoice_amount = await self._disconnect_and_pay()
-                yield "done.\n"
+                yield "done.\n" \
+                      f"Connection time: {connection_time}\n"
 
                 if invoice_amount is None:
                     yield "Invoice is missing, paid nothing.\n"
@@ -305,6 +307,7 @@ class Golem:
 
     async def _disconnect_and_pay(self):
         """Terminate agreement, wait max 5s for invoice, accept it, return accepted amount."""
+
         agreement = self._remote_python.activity.parent
         self._remote_python = None
 
@@ -390,7 +393,7 @@ class Golem:
         connection_status = 'Established' if self.connected else 'Disconnected'
         activity = self._remote_python.activity if self.connected else None
         provider_info = self._provider_info_text(activity) if self.connected else ''
-        connection_time = humanize.naturaldelta(datetime.now() - self.connected_at) if self.connected else ''
+        connection_time = self._get_connection_time()
         connection_time_str = f'Connection time: {connection_time}' if self.connected else ''
 
         return STATUS_TEMPLATE.format(
@@ -402,6 +405,9 @@ class Golem:
             provider_info=provider_info,
             connection_time=connection_time_str,
         )
+
+    def _get_connection_time(self):
+        return humanize.naturaldelta(datetime.now() - self.connected_at) if self.connected else ''
 
     def _get_help_text(self):
         return HELP_TEMPLATE
