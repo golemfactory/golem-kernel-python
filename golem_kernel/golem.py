@@ -261,7 +261,7 @@ class Golem:
                           "    Agreement created.\n" \
                           f"    {self._provider_info_text(activity)}" \
                           "Progress: 3/3\n" \
-                          "    Engine is starting...\n"
+                          "    Engine is starting. It might take few minutes...\n"
                     try:
                         remote_python = RemotePython(activity)
                         await remote_python.start()
