@@ -277,12 +277,6 @@ class Golem:
 
                 #  Staying with timeout for now
                 await asyncio.sleep(10)
-
-                # Set env vars
-                # Temp dir with a lot of storage
-                await remote_python.execute(f"%set_env TMPDIR={WORKDIR_PATH}")
-                # Disabling Pip progress bar so that long-lasting installations do not send too much data to stdout
-                await remote_python.execute("%set_env PIP_PROGRESS_BAR=off")
         except asyncio.TimeoutError:
             yield "\nReached timeout."
         else:
