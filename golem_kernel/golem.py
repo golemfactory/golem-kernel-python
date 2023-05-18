@@ -15,7 +15,7 @@ import humanize
 from pytimeparse import parse as parse_to_seconds
 
 from .remote_python import RemotePython
-from . import WORKDIR_PATH
+from . import TMPDIR_PATH
 
 
 import logging
@@ -123,6 +123,9 @@ class Golem:
         elif not self.connected:
             yield f"Provider not connected. Available commands: {', '.join(local_commands)}.", False
         else:
+            # Modifying %pip install magic command so that it uses right directories.
+            if code.startswith('%pip install'):
+                code = f'{code} --build {TMPDIR_PATH} --no-cache-dir'
             logger.info(f'-----RUNNING REMOTE COMMAND: {code}')
             async for out in self._run_remote_command(code):
                 yield out
@@ -272,7 +275,7 @@ class Golem:
                         asyncio.create_task(activity.parent.terminate())
 
                 # TODO: It still doesn't fix the problem.
-                #  Looks like there's something more on the provider that needs initialization
+                #  Looks like there's something more on the provider that needs awaiting
                 await remote_python.wait_for_remote_kernel()
 
                 #  Staying with timeout for now

@@ -2,6 +2,15 @@ from ipykernel.kernelbase import Kernel
 
 from .golem import Golem
 
+import logging
+logger = logging.getLogger()
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
 
 class GolemKernel(Kernel):
     implementation = 'GolemKernel'
@@ -24,6 +33,9 @@ class GolemKernel(Kernel):
         self, code, silent, store_history=True, user_expressions=None, allow_stdin=False
     ):
         async for content, is_result in self._golem.execute(code):
+
+            logger.info(f'-----Got return message (result: {is_result}, silent: {silent}): {content}')
+
             if silent:
                 continue
 
