@@ -1,10 +1,9 @@
-FROM maugnorbert/docker_golem_cuda_base
+FROM ubuntu:22.04
 
 WORKDIR /usr/src/app
 VOLUME /usr/src/app/workdir /usr/src/app/tmp
-#RUN chmod 777 /usr/src/app/workdir /usr/src/app/tmp
 
-RUN apt-get update && apt-get install -y python3-pip python3.8-venv pciutils curl net-tools
+RUN apt-get update && apt-get install -y python3-pip python3-venv pciutils curl net-tools
 
 COPY requirements.txt .
 RUN python3 -m venv /usr/src/app/venv

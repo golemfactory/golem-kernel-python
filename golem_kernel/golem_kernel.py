@@ -29,9 +29,7 @@ class GolemKernel(Kernel):
 
         self._golem = Golem()
 
-    async def do_execute(
-        self, code, silent, store_history=True, user_expressions=None, allow_stdin=False
-    ):
+    async def do_execute(self, code, silent, store_history=True, user_expressions=None, allow_stdin=False):
         async for content, is_result in self._golem.execute(code):
 
             logger.info(f'-----Got return message (result: {is_result}, silent: {silent}): {content}')

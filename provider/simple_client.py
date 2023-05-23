@@ -21,7 +21,7 @@ class SimpleClient:
         self.kc.start_channels()
 
     def execute(self, code):
-        """Execute code. Get stdout and result, if any."""
+        """Execute provided code. Get stdout and result, if any."""
 
         self.kc.execute(code)
         data = {}
