@@ -284,8 +284,7 @@ class Golem:
             yield "\nReached timeout."
         else:
             yield "Ready."
-
-        self._remote_python = remote_python
+            self._remote_python = remote_python
 
     async def _get_activity(self, payload, offer_scorer=None):
         demand = await self._golem_node.create_demand(payload, allocations=[self._allocation], autostart=True)
