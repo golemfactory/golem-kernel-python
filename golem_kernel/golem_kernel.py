@@ -12,6 +12,38 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 
+import comm
+from .comm.comm import BaseComm
+from .comm.manager import CommManager
+import threading
+import typing as t
+from traitlets import HasTraits
+
+
+def _create_comm(*args, **kwargs):
+    """Create a new Comm."""
+    return BaseComm(*args, **kwargs)
+
+
+# there can only be one comm manager in a ipykernel process
+_comm_lock = threading.Lock()
+_comm_manager: t.Optional[CommManager] = None
+
+
+def _get_comm_manager(*args, **kwargs):
+    """Create a new CommManager."""
+    global _comm_manager  # noqa
+    if _comm_manager is None:
+        with _comm_lock:
+            if _comm_manager is None:
+                _comm_manager = CommManager(*args, **kwargs)
+    return _comm_manager
+
+
+comm.create_comm = _create_comm
+comm.get_comm_manager = _get_comm_manager
+
+
 class GolemKernel(Kernel):
     implementation = 'GolemKernel'
     implementation_version = '0.001'
@@ -28,6 +60,14 @@ class GolemKernel(Kernel):
         super().__init__(*args, **kwargs)
 
         self._golem = Golem()
+
+        self.comm_manager = comm.get_comm_manager()
+
+        assert isinstance(self.comm_manager, HasTraits)
+        # self.shell.configurables.append(self.comm_manager)
+        comm_msg_types = ["comm_open", "comm_msg", "comm_close"]
+        for msg_type in comm_msg_types:
+            self.shell_handlers[msg_type] = getattr(self.comm_manager, msg_type)
 
     async def do_execute(self, code, silent, store_history=True, user_expressions=None, allow_stdin=False):
         async for content, is_result in self._golem.execute(code):
