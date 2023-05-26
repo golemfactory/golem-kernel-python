@@ -31,9 +31,11 @@ class CommManager(comm.base_comm.CommManager, traitlets.config.LoggingConfigurab
         """Handler for comm_open messages"""
         # This is for backward compatibility, the comm_open creates a a new ipykernel.comm.Comm
         # but we should let the base class create the comm with comm.create_comm in a major release
+        logger.error("--------MSG FOR COMM: %s", msg)
         content = msg["content"]
         comm_id = content["comm_id"]
         target_name = content["target_name"]
+        logger.error("--------TARGETS: %s", self.targets)
         f = self.targets.get(target_name, None)
         comm = Comm(
             comm_id=comm_id,
@@ -41,6 +43,7 @@ class CommManager(comm.base_comm.CommManager, traitlets.config.LoggingConfigurab
             target_name=target_name,
             show_warning=False,
         )
+        logger.error("--------CREATED COMMS: %s", self.comms)
         self.register_comm(comm)
         if f is None:
             logger.error("No such comm target registered: %s", target_name)
