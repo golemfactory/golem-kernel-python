@@ -97,6 +97,15 @@ class GolemKernel(Kernel):
                         'metadata': {},  # this is necessary for jupyterlab, but not jupyter notebook
                     }
                     self.send_response(self.iopub_socket, 'execute_result', execute_result_content)
+            elif isinstance(content, dict) and 'type' in content and content['type'] == 'display_data':
+                logger.info(f'Sending display data: {content["content"]}')
+                display_data_content = {
+                    'data': content['content'],
+                    'metadata': {},  # this is necessary for jupyterlab, but not jupyter notebook
+                }
+                self.send_response(self.iopub_socket, 'display_data', display_data_content)
+            elif isinstance(content, dict) and content['type'] == 'clear_output':
+                self.send_response(self.iopub_socket, "clear_output", {'wait': False})
             else:
                 stream_content = {'name': 'stdout', 'text': content}
                 self.send_response(self.iopub_socket, 'stream', stream_content)

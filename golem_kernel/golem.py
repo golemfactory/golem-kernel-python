@@ -28,6 +28,8 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 
+SPINNER_SVG = '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/><path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z"><animateTransform attributeName="transform" type="rotate" dur="0.75s" values="0 12 12;360 12 12" repeatCount="indefinite"/></path></svg>'
+
 STATUS_TEMPLATE = '''\
 My node ID: {node_id}
 My wallet address: {node_id}
@@ -123,11 +125,7 @@ class Golem:
         elif not self.connected:
             yield f"Provider not connected. Available commands: {', '.join(local_commands)}.", False
         else:
-            # Modifying %pip install magic command so that it uses right directories.
-            if code.startswith('%pip install'):
-                code = f'{code} --build {TMPDIR_PATH} --no-cache-dir'
-            logger.info(f'-----RUNNING REMOTE COMMAND: {code}')
-            async for out in self._run_remote_command(code):
+            async for out in self._alter_and_run_remote_command(code):
                 yield out
 
     async def aclose(self):
@@ -221,6 +219,29 @@ class Golem:
                     yield "File downloaded.\n"
         else:
             raise ValueError(f"Unknown command: {code}")
+
+    async def _alter_and_run_remote_command(self, code):
+        """ Altering PIP behaviour:
+          - running command with special parameters so pip is using right directories for temp data
+          - displaying spinner while pip is running
+        """
+
+        if code.startswith('%pip install'):
+            code = f'{code} --build {TMPDIR_PATH} --no-cache-dir'
+            yield {
+                "type": "display_data",
+                "content": {
+                    "text/plain": "<IPython.core.display.HTML object>",
+                    "text/html": SPINNER_SVG,
+                }
+            }, False
+            async for content, is_result in self._run_remote_command(code):
+                if not is_result:
+                    yield {"type": "clear_output"}, False
+                yield content, is_result
+        else:
+            async for out in self._run_remote_command(code):
+                yield out
 
     async def _run_remote_command(self, code):
         result = await self._remote_python.execute(code)

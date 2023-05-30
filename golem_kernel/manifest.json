@@ -14,9 +14,9 @@
         "os": "linux"
       },
       "urls": [
-        "http://girepo.dev.golem.network:8000/docker-golem-kernel-cpu-latest-9cb191a6a0.gvmi"
+        "http://girepo.dev.golem.network:8000/docker-golem-kernel-cpu-latest-f7d5f42800.gvmi"
       ],
-      "hash": "sha3:7677b6f4b4c4a29ed8b9556e3d0c8b502e0a15e79444a049c5e8ee05"
+      "hash": "sha3:00ac469da8eda6eb773a9bf4abbb69d1f1ef91bd856b074da25248ab"
     }
   ],
   "compManifest": {
