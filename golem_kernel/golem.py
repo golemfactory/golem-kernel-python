@@ -3,7 +3,7 @@ import base64
 from datetime import datetime, timedelta
 import json
 from pathlib import Path
-from random import random
+from random import random, randint
 from subprocess import check_output, check_call
 
 import async_timeout
@@ -28,7 +28,7 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 
-SPINNER_SVG = '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" rx="1" width="10" height="10"><animate id="spinner_c7A9" begin="0;spinner_23zP.end" attributeName="x" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_Acnw" begin="spinner_ZmWi.end" attributeName="y" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_iIcm" begin="spinner_zfQN.end" attributeName="x" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_WX4U" begin="spinner_rRAc.end" attributeName="y" dur="0.2s" values="13;1" fill="freeze"/></rect><rect x="1" y="13" rx="1" width="10" height="10"><animate id="spinner_YLx7" begin="spinner_c7A9.end" attributeName="y" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_vwnJ" begin="spinner_Acnw.end" attributeName="x" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_KQuy" begin="spinner_iIcm.end" attributeName="y" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_arKy" begin="spinner_WX4U.end" attributeName="x" dur="0.2s" values="13;1" fill="freeze"/></rect><rect x="13" y="13" rx="1" width="10" height="10"><animate id="spinner_ZmWi" begin="spinner_YLx7.end" attributeName="x" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_zfQN" begin="spinner_vwnJ.end" attributeName="y" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_rRAc" begin="spinner_KQuy.end" attributeName="x" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_23zP" begin="spinner_arKy.end" attributeName="y" dur="0.2s" values="1;13" fill="freeze"/></rect></svg>'
+SPINNER_SVG = '<svg {spinner_class} width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" rx="1" width="10" height="10"><animate id="spinner_c7A9" begin="0;spinner_23zP.end" attributeName="x" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_Acnw" begin="spinner_ZmWi.end" attributeName="y" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_iIcm" begin="spinner_zfQN.end" attributeName="x" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_WX4U" begin="spinner_rRAc.end" attributeName="y" dur="0.2s" values="13;1" fill="freeze"/></rect><rect x="1" y="13" rx="1" width="10" height="10"><animate id="spinner_YLx7" begin="spinner_c7A9.end" attributeName="y" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_vwnJ" begin="spinner_Acnw.end" attributeName="x" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_KQuy" begin="spinner_iIcm.end" attributeName="y" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_arKy" begin="spinner_WX4U.end" attributeName="x" dur="0.2s" values="13;1" fill="freeze"/></rect><rect x="13" y="13" rx="1" width="10" height="10"><animate id="spinner_ZmWi" begin="spinner_YLx7.end" attributeName="x" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_zfQN" begin="spinner_vwnJ.end" attributeName="y" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_rRAc" begin="spinner_KQuy.end" attributeName="x" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_23zP" begin="spinner_arKy.end" attributeName="y" dur="0.2s" values="1;13" fill="freeze"/></rect></svg>'
 
 STATUS_TEMPLATE = '''\
 My node ID: {node_id}
@@ -230,13 +230,7 @@ class Golem:
             # New Pip versions doesn't support --build option.
             # Since Pip 21.3 it relies on TMPDIR env var. Can additionally use --no-clean.
             code = f'{code} --build {TMPDIR_PATH} --no-cache-dir'
-            yield {
-                "type": "display_data",
-                "content": {
-                    "text/plain": "<IPython.core.display.HTML object>",
-                    "text/html": SPINNER_SVG,
-                }
-            }, False
+            yield self._get_spinner_content_dict(), False
             async for content, is_result in self._run_remote_command(code):
                 if not is_result:
                     yield {"type": "clear_output"}, False
@@ -244,6 +238,25 @@ class Golem:
         else:
             async for out in self._run_remote_command(code):
                 yield out
+
+    def _get_spinner_content_dict(self, html_class=None):
+        spinner_class = f'class="{html_class}"' if html_class else ''
+        return {
+            "type": "display_data",
+            "content": {
+                "text/plain": "<IPython.core.display.HTML object>",
+                "text/html": SPINNER_SVG.format(spinner_class=spinner_class),
+            }
+        }
+
+    def _get_spinner_hide_css(self, spinner_class):
+        return {
+            "type": "display_data",
+            "content": {
+                "text/plain": "<IPython.core.display.HTML object>",
+                "text/html": f"<style>." + spinner_class + "{display: none !important}</style>",
+            }
+        }
 
     async def _run_remote_command(self, code):
         result = await self._remote_python.execute(code)
@@ -282,18 +295,27 @@ class Golem:
                       "    Demand created. Waiting for counter proposal.\n" \
                       f"    Searching for {self._payload_text(payload)}...\n" \
                       f"    Will try to connect for {humanize.naturaldelta(timeout)}.\n"
+
+                spinner_1_class = f'connect-1-{randint(100, 999)}'
+                yield self._get_spinner_content_dict(spinner_1_class)
+
                 async for activity in self._get_activity(payload, offer_scorer):
                     yield "Progress: 2/3\n" \
                           "    Agreement created.\n" \
                           f"    {self._provider_info_text(activity)}" \
                           "Progress: 3/3\n" \
                           "    Engine is starting. It might take few minutes...\n"
+                    yield self._get_spinner_hide_css(spinner_1_class)
+                    spinner_2_class = f'connect-2-{randint(100, 999)}'
+                    yield self._get_spinner_content_dict(spinner_2_class)
+
                     try:
                         remote_python = RemotePython(activity)
                         await remote_python.start()
                         self.connected_at = datetime.now()
                         break
                     except Exception:
+                        yield self._get_spinner_hide_css(spinner_2_class)
                         yield "failed.\n"
                         asyncio.create_task(activity.parent.terminate())
 
@@ -304,8 +326,12 @@ class Golem:
                 #  Staying with timeout for now
                 await asyncio.sleep(10)
         except asyncio.TimeoutError:
+            yield self._get_spinner_hide_css(spinner_1_class)
+            if 'spinner_2_class' in locals():
+                yield self._get_spinner_hide_css(spinner_2_class)
             yield "\nReached timeout."
         else:
+            yield self._get_spinner_hide_css(spinner_2_class)
             yield "Ready."
             self._remote_python = remote_python
 
