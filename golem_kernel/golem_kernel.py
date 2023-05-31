@@ -72,8 +72,8 @@ class GolemKernel(Kernel):
         from ipywidgets import register_comm_target
         register_comm_target()
 
-        from ipywidgets.widgets.widget import _registry
-        logger.error(list(_registry.items()))
+        # from ipywidgets.widgets.widget import _registry
+        # logger.error(list(_registry.items()))
 
     async def do_execute(self, code, silent, store_history=True, user_expressions=None, allow_stdin=False):
         async for content, is_result in self._golem.execute(code):
