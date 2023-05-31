@@ -49,4 +49,4 @@ if __name__ == '__main__':
     if sys.argv[1] == "install":
         install()
     else:
-        IPKernelApp.launch_instance(kernel_class=GolemKernel, code_to_run='%help')
+        IPKernelApp.launch_instance(kernel_class=GolemKernel)
