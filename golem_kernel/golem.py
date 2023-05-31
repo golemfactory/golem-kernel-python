@@ -227,6 +227,8 @@ class Golem:
         """
 
         if code.startswith('%pip install'):
+            # New Pip versions doesn't support --build option.
+            # Since Pip 21.3 it relies on TMPDIR env var. Can additionally use --no-clean.
             code = f'{code} --build {TMPDIR_PATH} --no-cache-dir'
             yield {
                 "type": "display_data",
