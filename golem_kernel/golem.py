@@ -54,7 +54,7 @@ Easy to use tool to run Your Jupyter Notebooks on the Golem Network!
 COMMANDS:    
     %status		Shows current status of Jupyter on Golem
     %fund		Requests for testnet funds, e.g. '%fund rinkeby'
-    %budget		Allocates GLM tokens for payments, e.g. '%budget rinkeby 2'
+    %budget		Allocates GLM tokens for payments, e.g. '%budget rinkeby 2'. Available networks: rinkeby, polygon, mainnet.
     %connect		Looks for Provider which meets with defined criteria [mem|cores|disk|cuda], e.g. '%connect mem>1'				
     %disconnect 	Disconnects from the currently active Provider
     %download	 	Downloads file from Provider's ./workdir folder to local machine, e.g. '%download dataset.csv'
