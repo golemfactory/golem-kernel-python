@@ -2,6 +2,7 @@ import asyncio
 import base64
 from datetime import datetime, timedelta
 import json
+import os
 from pathlib import Path
 from random import random, randint
 from subprocess import check_output, check_call
@@ -28,6 +29,7 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 
+YAGNA_APPNAME_JUPYTER = 'jupyterongolem'
 SPINNER_SVG = '<svg {spinner_class} width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" rx="1" width="10" height="10"><animate id="spinner_c7A9" begin="0;spinner_23zP.end" attributeName="x" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_Acnw" begin="spinner_ZmWi.end" attributeName="y" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_iIcm" begin="spinner_zfQN.end" attributeName="x" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_WX4U" begin="spinner_rRAc.end" attributeName="y" dur="0.2s" values="13;1" fill="freeze"/></rect><rect x="1" y="13" rx="1" width="10" height="10"><animate id="spinner_YLx7" begin="spinner_c7A9.end" attributeName="y" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_vwnJ" begin="spinner_Acnw.end" attributeName="x" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_KQuy" begin="spinner_iIcm.end" attributeName="y" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_arKy" begin="spinner_WX4U.end" attributeName="x" dur="0.2s" values="13;1" fill="freeze"/></rect><rect x="13" y="13" rx="1" width="10" height="10"><animate id="spinner_ZmWi" begin="spinner_YLx7.end" attributeName="x" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_zfQN" begin="spinner_vwnJ.end" attributeName="y" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_rRAc" begin="spinner_KQuy.end" attributeName="x" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_23zP" begin="spinner_arKy.end" attributeName="y" dur="0.2s" values="1;13" fill="freeze"/></rect></svg>'
 
 STATUS_TEMPLATE = '''\
@@ -278,7 +280,7 @@ class Golem:
 
         if self._golem_node is None:
             self._loop = asyncio.get_running_loop()
-            self._golem_node = GolemNode()
+            self._golem_node = GolemNode(self._get_or_create_yagna_appkey())
             self._golem_node.event_bus.listen(on_event)
             await self._golem_node.start()
 
@@ -425,15 +427,17 @@ class Golem:
     ########################################################
     #   Functions that change nothing, just return some text
     def _get_status_text(self):
+        app_key = self._get_or_create_yagna_appkey()
+        if app_key is None:
+            app_key = GolemNode().app_key
         id_data = json.loads(check_output(["yagna", "app-key", "list", "--json"]))
 
-        app_key = GolemNode().app_key
         for el in id_data:
             if el["key"] == app_key:
                 node_id = el["id"]
                 break
         else:
-            node_id = "[unknown node id]"  # this should not be possible
+            node_id = "[unknown node id]"  # this is possible when user set YAGNA_APPKEY to not existing value
 
         connection_status = 'Established' if self.connected else 'Disconnected'
         activity = self._remote_python.activity if self.connected else None
@@ -450,6 +454,17 @@ class Golem:
             provider_info=provider_info,
             connection_time=connection_time_str,
         )
+
+    def _get_or_create_yagna_appkey(self):
+        if os.getenv('YAGNA_APPKEY') is None:
+            id_data = json.loads(check_output(["yagna", "app-key", "list", "--json"]))
+            yagna_jupter_app = next((app for app in id_data if app['name'] == YAGNA_APPNAME_JUPYTER), None)
+            if yagna_jupter_app is None:
+                return check_output(["yagna", "app-key", "create", YAGNA_APPNAME_JUPYTER]).decode('utf-8').strip('"\n')
+            else:
+                return yagna_jupter_app['key']
+        else:
+            return os.getenv('YAGNA_APPKEY')
 
     def _get_connection_time(self):
         return humanize.naturaldelta(datetime.now() - self.connected_at) if self.connected else ''
