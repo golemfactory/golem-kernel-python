@@ -32,6 +32,13 @@ logger.setLevel(logging.INFO)
 YAGNA_APPNAME_JUPYTER = 'jupyterongolem'
 SPINNER_SVG = '<svg {spinner_class} width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" rx="1" width="10" height="10"><animate id="spinner_c7A9" begin="0;spinner_23zP.end" attributeName="x" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_Acnw" begin="spinner_ZmWi.end" attributeName="y" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_iIcm" begin="spinner_zfQN.end" attributeName="x" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_WX4U" begin="spinner_rRAc.end" attributeName="y" dur="0.2s" values="13;1" fill="freeze"/></rect><rect x="1" y="13" rx="1" width="10" height="10"><animate id="spinner_YLx7" begin="spinner_c7A9.end" attributeName="y" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_vwnJ" begin="spinner_Acnw.end" attributeName="x" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_KQuy" begin="spinner_iIcm.end" attributeName="y" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_arKy" begin="spinner_WX4U.end" attributeName="x" dur="0.2s" values="13;1" fill="freeze"/></rect><rect x="13" y="13" rx="1" width="10" height="10"><animate id="spinner_ZmWi" begin="spinner_YLx7.end" attributeName="x" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_zfQN" begin="spinner_vwnJ.end" attributeName="y" dur="0.2s" values="13;1" fill="freeze"/><animate id="spinner_rRAc" begin="spinner_KQuy.end" attributeName="x" dur="0.2s" values="1;13" fill="freeze"/><animate id="spinner_23zP" begin="spinner_arKy.end" attributeName="y" dur="0.2s" values="1;13" fill="freeze"/></rect></svg>'
 
+YAGNA_NOT_FOUND_HTML_MESSAGE = '''\
+<span style="color: red; font-weight: bold;">WARNING</span>: Yagna executable was not found.
+<br/>
+Please install Golem first: <a href="https://handbook.golem.network/requestor-tutorials/flash-tutorial-of-requestor-development">Installation guide</a>
+</p>
+'''
+
 STATUS_TEMPLATE = '''\
 My node ID: {node_id}
 My wallet address: {node_id}
@@ -60,6 +67,7 @@ COMMANDS:
     %download	 	Downloads file from Provider's ./workdir folder to local machine, e.g. '%download dataset.csv'
     %upload		Uploads file from local machine into Provider's ./workdir folder, e.g. '%upload results.csv'
     %help		Shows this message
+
 '''
 
 PROVIDER_TEMPLATE = '''\
@@ -69,6 +77,10 @@ Connected to {provider_name} [{provider_id}]
     CPU: {cpu} cores
     GPU: {gpu}
 '''
+
+
+class YagnaNotFound(Exception):
+    pass
 
 
 async def negotiate(proposal):
@@ -120,10 +132,16 @@ class Golem:
             try:
                 async for out in self._run_local_command(code):
                     yield out, False
+            except YagnaNotFound:
+                yield {
+                    "type": "display_data",
+                    "content": {
+                        "text/plain": "<IPython.core.display.HTML object>",
+                        "text/html": YAGNA_NOT_FOUND_HTML_MESSAGE,
+                    }
+                }, False
             except Exception as e:
-                import traceback
-                tb = traceback.format_exc()
-                yield f"Error running a local command: {e}, {tb}", False
+                yield f"Error running a local command: {e}", False
         elif not self.connected:
             yield f"Provider not connected. Available commands: {', '.join(local_commands)}.", False
         else:
@@ -143,11 +161,23 @@ class Golem:
 
     ####################
     #   INTERNALS
+
+    def _validate_yagna_exists(self) -> bool:
+        try:
+            check_call(["yagna", "--version"])
+            return True
+        except Exception:
+            raise YagnaNotFound
+
     async def _run_local_command(self, code):
+        if not code.startswith('%help'):
+            self._validate_yagna_exists()
+
         if code == '%status':
             yield self._get_status_text()
         elif code == '%help':
             yield self._get_help_text()
+            self._validate_yagna_exists()
         elif code.startswith('%fund'):
             network = code.split()[1]
             yield "Waiting for funds\n"
