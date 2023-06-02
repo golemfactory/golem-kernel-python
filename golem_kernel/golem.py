@@ -62,7 +62,7 @@ COMMANDS:
     %status		Shows current status of Jupyter on Golem
     %fund		Requests for testnet funds, e.g. '%fund rinkeby'
     %budget		Allocates GLM tokens for payments, e.g. '%budget rinkeby 2'. Available networks: rinkeby, polygon, mainnet.
-    %connect		Looks for Provider which meets with defined criteria [mem|cores|disk|cuda], e.g. '%connect mem>1'				
+    %connect		Looks for Provider which meets with defined criteria [mem|cores|disk], e.g. '%connect mem>1'				
     %disconnect 	Disconnects from the currently active Provider
     %download	 	Downloads file from Provider's ./workdir folder to local machine, e.g. '%download dataset.csv'
     %upload		Uploads file from local machine into Provider's ./workdir folder, e.g. '%upload results.csv'
@@ -75,7 +75,6 @@ Connected to {provider_name} [{provider_id}]
     RAM: {ram} GB
     DISK: {disk} GB
     CPU: {cpu} cores
-    GPU: {gpu}
 '''
 
 
@@ -441,9 +440,9 @@ class Golem:
             #     strategy = part[9:]
             #     if strategy not in STRATEGY_SCORING_FUNCTION:
             #         raise ValueError(f"Unknown strategy {part[9:]}")
-            elif part.startswith("cuda="):
-                if part[5:].strip().lower() in {'yes', 'y', '1', 'true'}:
-                    params["capabilities"].append('cuda')
+            # elif part.startswith("cuda="):
+            #     if part[5:].strip().lower() in {'yes', 'y', '1', 'true'}:
+            #         params["capabilities"].append('cuda')
             else:
                 raise ValueError(f"Unknown option: {part}")
 
@@ -535,11 +534,11 @@ class Golem:
         proposal_data = activity.parent.parent.data
         properties = proposal_data.properties
 
-        cuda_card = next((cap.split(',', 1)[1].strip()
-                          for cap in properties['golem.runtime.capabilities']
-                          if cap.startswith('cuda,')),
-                         None)
-        gpu = cuda_card if cuda_card else 'None'
+        # cuda_card = next((cap.split(',', 1)[1].strip()
+        #                   for cap in properties['golem.runtime.capabilities']
+        #                   if cap.startswith('cuda,')),
+        #                  None)
+        # gpu = cuda_card if cuda_card else 'None'
 
         return PROVIDER_TEMPLATE.format(
             provider_id=proposal_data.issuer_id,
@@ -547,14 +546,14 @@ class Golem:
             cpu=properties['golem.inf.cpu.cores'],
             ram=properties['golem.inf.mem.gib'],
             disk=properties['golem.inf.storage.gib'],
-            gpu=gpu,
+            # gpu=gpu,
         )
 
     def _payload_text(self, payload):
         mem = payload.min_mem_gib
         disk = payload.min_storage_gib
         cores = payload.min_cpu_threads
-        cuda = 'cuda' in payload.capabilities
+        # cuda = 'cuda' in payload.capabilities
 
         constraint_parts = []
         if mem:
@@ -563,8 +562,8 @@ class Golem:
             constraint_parts.append(f"DISK>={disk}gb")
         if cores:
             constraint_parts.append(f"CPU>={cores}")
-        if cuda:
-            constraint_parts.append("CUDA=yes")
+        # if cuda:
+        #     constraint_parts.append("CUDA=yes")
 
         if constraint_parts:
             return "(" + " ".join(constraint_parts) + ")"
