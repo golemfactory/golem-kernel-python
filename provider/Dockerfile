@@ -12,6 +12,7 @@ RUN /usr/src/app/venv/bin/pip install wheel setuptools
 RUN /usr/src/app/venv/bin/pip install -r requirements.txt
 RUN rm requirements.txt
 
+COPY pip.conf /usr/src/app/venv/
 COPY server.py .
 COPY wait_for_server.sh .
 COPY wait_for_kernel.sh .
