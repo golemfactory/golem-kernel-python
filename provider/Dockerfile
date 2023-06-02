@@ -1,4 +1,4 @@
-FROM maugnorbert/docker_golem_cuda_base
+FROM ubuntu:focal-20220801
 
 WORKDIR /usr/src/app
 VOLUME /usr/src/app/workdir /usr/src/app/tmp
