@@ -180,11 +180,14 @@ class Golem:
         elif code.startswith('%fund'):
             network = code.split()[1]
             yield "Waiting for funds\n"
+            yield self._get_spinner_content_dict()
             try:
                 self._get_funds(network)
             except Exception:
+                yield {"type": "clear_output"}
                 yield "Funding failed"
             else:
+                yield {"type": "clear_output"}
                 yield self._get_network_status_text(network) + "\n"
                 yield self._get_budget_text()
         elif code.startswith('%budget'):
@@ -297,7 +300,7 @@ class Golem:
             yield result["result"], True
 
     def _get_funds(self, network):
-        check_call(["yagna", "payment", "fund", "--network", network])
+        check_call(["yagna", "payment", "fund", "--network", network], timeout=60)
 
     async def _create_allocation(self, network, amount):
         if self._allocation is not None:
