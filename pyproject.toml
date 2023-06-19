@@ -7,7 +7,7 @@ name = "golem-jupyter-kernel"
 version = "0.1.1"
 description = "Jupyter Kernel on Golem (https://www.golem.network/)"
 readme = "README.md"
-authors = ["GolemFactory <contact@golem.network>"]
+authors = ["GolemFactory <jupyter@golem.network>"]
 license = "LGPL-3.0-or-later"
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -18,9 +18,9 @@ classifiers = [
 keywords = ["golem", "jupyter", "kernel", "notebook"]
 
 [tool.poetry.dependencies]
+python = "^3.8.0"
 jupyter = "1.0.0"
 websockets = "10.*"
-#golem_core = { git = "https://github.com/golemfactory/golem-core-python", rev = "4e73b3b" }
-golem_core = "0.1.0"
+golem_core = { git = "https://github.com/golemfactory/golem-core-python", rev = "13e75c81fe60bf58218205dba23deb41cb08a41b" }
 pytimeparse = "1.*"
 humanize = "4.*"
