@@ -21,6 +21,6 @@ keywords = ["golem", "jupyter", "kernel", "notebook"]
 python = "^3.8.0"
 jupyter = "1.0.0"
 websockets = "10.*"
-golem_core = { git = "https://github.com/golemfactory/golem-core-python", rev = "13e75c81fe60bf58218205dba23deb41cb08a41b" }
+golem-api-python = "0.1.1"
 pytimeparse = "1.*"
 humanize = "4.*"
