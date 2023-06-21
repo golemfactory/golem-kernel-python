@@ -43,7 +43,7 @@ STATUS_TEMPLATE = '''\
 My node ID: {node_id}
 My wallet address: {node_id}
 {polygon_status}
-{rinkeby_status}
+{goerli_status}
 Connection status: {connection_status}
 {provider_info}{connection_time}
 '''
@@ -60,8 +60,8 @@ Easy to use tool to run Your Jupyter Notebooks on the Golem Network!
 
 COMMANDS:    
     %status		Shows current status of Jupyter on Golem
-    %fund		Requests for testnet funds, e.g. '%fund rinkeby'
-    %budget		Allocates GLM tokens for payments, e.g. '%budget rinkeby 2'. Available networks: rinkeby, polygon, mainnet.
+    %fund		Requests for testnet funds, e.g. '%fund goerli'
+    %budget		Allocates GLM tokens for payments, e.g. '%budget goerli 2'. Available networks: goerli, polygon, mainnet.
     %connect		Looks for Provider which meets with defined criteria [mem|cores|disk], e.g. '%connect mem>1'				
     %disconnect 	Disconnects from the currently active Provider
     %download	 	Downloads file from Provider's ./workdir folder to local machine, e.g. '%download dataset.csv'
@@ -482,7 +482,7 @@ class Golem:
             connection_status=connection_status,
             # budget=self._get_budget_text(),
             polygon_status=self._get_network_status_text('polygon'),
-            rinkeby_status=self._get_network_status_text('rinkeby'),
+            goerli_status=self._get_network_status_text('goerli'),
             provider_info=provider_info,
             connection_time=connection_time_str,
         )
@@ -507,8 +507,8 @@ class Golem:
     def _get_network_status_text(self, network):
         if network == 'polygon':
             network_full_name = 'Polygon[mainnet]'
-        elif network == 'rinkeby':
-            network_full_name = 'Rinkeby[testnet]'
+        elif network == 'goerli':
+            network_full_name = 'Goerli[testnet]'
         else:
             network_full_name = network
 

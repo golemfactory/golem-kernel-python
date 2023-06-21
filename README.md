@@ -30,7 +30,7 @@ Shows the amount of tokens on the testnet and mainnet.
 Get some funds, if you need them. You can only get testnet tokens this way.
 
 ```
-%fund rinkeby
+%fund goerli
 ```
 
 ### %budget
@@ -38,7 +38,7 @@ Get some funds, if you need them. You can only get testnet tokens this way.
 Define a budget for computations.
 
 ```
-%budget rinkeby 1
+%budget goerli 1
 ```
 
 ### %connect
