@@ -7,6 +7,7 @@ from pathlib import Path
 from random import random, randint
 from subprocess import check_output, check_call
 
+import aiohttp
 import async_timeout
 from golem_core.core.golem_node import GolemNode
 from golem_core.pipeline import Chain, Map, Buffer
@@ -28,6 +29,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
+KERNEL_IMAGE_TAG = 'stan7123/jupyter-kernel:latest'
 
 YAGNA_APPNAME_JUPYTER = 'jupyterongolem'
 SPINNER_SVG = '<svg {spinner_class} width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><style>.spinner_9y7u{{animation:spinner_fUkk 2.4s linear infinite;animation-delay:-2.4s}}.spinner_DF2s{{animation-delay:-1.6s}}.spinner_q27e{{animation-delay:-.8s}}@keyframes spinner_fUkk{{8.33%{{x:13px;y:1px}}25%{{x:13px;y:1px}}33.3%{{x:13px;y:13px}}50%{{x:13px;y:13px}}58.33%{{x:1px;y:13px}}75%{{x:1px;y:13px}}83.33%{{x:1px;y:1px}}}}</style><rect class="spinner_9y7u" x="1" y="1" rx="1" width="10" height="10"/><rect class="spinner_9y7u spinner_DF2s" x="1" y="1" rx="1" width="10" height="10"/><rect class="spinner_9y7u spinner_q27e" x="1" y="1" rx="1" width="10" height="10"/></svg>'
@@ -206,7 +208,11 @@ class Golem:
                 except IndexError:
                     args_str = ''
 
-                payload, offer_scorer, timeout = await self._parse_connect_args(args_str)
+                yield "Progress: 1/4\n" \
+                      f"    Resolving image tag: {KERNEL_IMAGE_TAG}..."
+                image_details = await self._get_kernel_image_details()
+                yield " Ok.\n"
+                payload, offer_scorer, timeout = await self._parse_connect_args(args_str, image_details)
                 async for out in self._connect(payload, offer_scorer, timeout):
                     yield out
         elif code.startswith('%disconnect'):
@@ -325,7 +331,7 @@ class Golem:
     async def _connect(self, payload, offer_scorer, timeout):
         try:
             async with async_timeout.timeout(int(timeout.total_seconds())):
-                yield f"Progress: 1/3\n" \
+                yield f"Progress: 2/4\n" \
                       "    Demand created. Waiting for counter proposal.\n" \
                       f"    Searching for {self._payload_text(payload)}...\n" \
                       f"    Will try to connect for {humanize.naturaldelta(timeout)}.\n"
@@ -334,10 +340,10 @@ class Golem:
                 yield self._get_spinner_content_dict(spinner_1_class)
 
                 async for activity in self._get_activity(payload, offer_scorer):
-                    yield "Progress: 2/3\n" \
+                    yield "Progress: 3/4\n" \
                           "    Agreement created.\n" \
                           f"    {self._provider_info_text(activity)}" \
-                          "Progress: 3/3\n" \
+                          "Progress: 4/4\n" \
                           "    Engine is starting. It might take few minutes...\n"
                     yield self._get_spinner_hide_css(spinner_1_class)
                     spinner_2_class = f'connect-2-{randint(100, 999)}'
@@ -407,11 +413,21 @@ class Golem:
 
         return float(agreement.invoice.data.amount)
 
-    async def _parse_connect_args(self, text):
+    async def _get_kernel_image_details(self):
+        async with aiohttp.ClientSession() as session:
+            registry_info_url = f'https://registry.golem.network/v1/image/info?tag={KERNEL_IMAGE_TAG}&count=true'
+            async with session.get(registry_info_url) as resp:
+                return await resp.json()
+
+    async def _parse_connect_args(self, text, image_details):
         """IN: raw text passed to connect. OUT: payload (or raises exception)."""
 
         manifest = open(Path(__file__).parent.joinpath("manifest.json"), "rb").read()
-        manifest = base64.b64encode(manifest).decode("utf-8")
+        manifest = (manifest
+                    .decode('utf-8')
+                    .replace('{sha3}', image_details['sha3'])
+                    .replace('{image_url}', image_details['http']))
+        manifest = base64.b64encode(manifest.encode('utf-8')).decode("utf-8")
 
         params = {
             "manifest": manifest,
