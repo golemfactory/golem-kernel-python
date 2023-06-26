@@ -210,11 +210,15 @@ class Golem:
 
                 yield "Progress: 1/4\n" \
                       f"    Resolving image tag: {KERNEL_IMAGE_TAG}..."
-                image_details = await self._get_kernel_image_details()
-                yield " Ok.\n"
-                payload, offer_scorer, timeout = await self._parse_connect_args(args_str, image_details)
-                async for out in self._connect(payload, offer_scorer, timeout):
-                    yield out
+                try:
+                    image_details = await self._get_kernel_image_details()
+                except aiohttp.ClientResponseError:
+                    yield " Failed!\n"
+                else:
+                    yield " Ok.\n"
+                    payload, offer_scorer, timeout = await self._parse_connect_args(args_str, image_details)
+                    async for out in self._connect(payload, offer_scorer, timeout):
+                        yield out
         elif code.startswith('%disconnect'):
             connection_time = self._get_connection_time()
             if not self.connected:
@@ -416,8 +420,11 @@ class Golem:
     async def _get_kernel_image_details(self):
         async with aiohttp.ClientSession() as session:
             registry_info_url = f'https://registry.golem.network/v1/image/info?tag={KERNEL_IMAGE_TAG}&count=true'
-            async with session.get(registry_info_url) as resp:
-                return await resp.json()
+            try:
+                async with session.get(registry_info_url, raise_for_status=True) as resp:
+                    return await resp.json()
+            except aiohttp.ClientResponseError:
+                raise
 
     async def _parse_connect_args(self, text, image_details):
         """IN: raw text passed to connect. OUT: payload (or raises exception)."""
