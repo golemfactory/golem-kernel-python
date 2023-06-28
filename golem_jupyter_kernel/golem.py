@@ -102,7 +102,7 @@ async def random_score(proposal):
 
 STRATEGY_SCORING_FUNCTION = {"bestprice": bestprice_score, "random": random_score}
 DEFAULT_SCORING_STRATEGY = "bestprice"
-DEFAULT_CONNECTION_TIMEOUT = timedelta(minutes=5)
+DEFAULT_CONNECTION_TIMEOUT = timedelta(minutes=10)
 
 
 class Golem:
@@ -348,7 +348,7 @@ class Golem:
                           "    Agreement created.\n" \
                           f"    {self._provider_info_text(activity)}" \
                           "Progress: 4/4\n" \
-                          "    Engine is starting. It might take few minutes...\n"
+                          "    Engine is starting. Depending on provider, it might take few to ~10 minutes...\n"
                     yield self._get_spinner_hide_css(spinner_1_class)
                     spinner_2_class = f'connect-2-{randint(100, 999)}'
                     yield self._get_spinner_content_dict(spinner_2_class)
