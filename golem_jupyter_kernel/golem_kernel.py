@@ -2,15 +2,6 @@ from ipykernel.kernelbase import Kernel
 
 from .golem import Golem
 
-import logging
-logger = logging.getLogger()
-handler = logging.StreamHandler()
-formatter = logging.Formatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logger.setLevel(logging.INFO)
-
 
 class GolemKernel(Kernel):
     implementation = 'GolemKernel'
@@ -31,9 +22,6 @@ class GolemKernel(Kernel):
 
     async def do_execute(self, code, silent, store_history=True, user_expressions=None, allow_stdin=False):
         async for content, is_result in self._golem.execute(code):
-
-            logger.info(f'-----Got return message (result: {is_result}, silent: {silent}): {content}')
-
             if silent:
                 continue
 
@@ -52,7 +40,6 @@ class GolemKernel(Kernel):
                     }
                     self.send_response(self.iopub_socket, 'execute_result', execute_result_content)
             elif isinstance(content, dict) and 'type' in content and content['type'] == 'display_data':
-                logger.info(f'Sending display data: {content["content"]}')
                 display_data_content = {
                     'data': content['content'],
                     'metadata': {},  # this is necessary for jupyterlab, but not jupyter notebook

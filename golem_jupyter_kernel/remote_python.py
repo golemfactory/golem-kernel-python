@@ -2,21 +2,10 @@ from pathlib import Path
 import websockets
 from urllib.parse import urlparse
 import json
-import pprint
 
 from golem_core.core.activity_api import commands
 
 from . import WORKDIR_PATH
-
-
-import logging
-logger = logging.getLogger()
-handler = logging.StreamHandler()
-formatter = logging.Formatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
 
 
 class RemotePython:
@@ -73,16 +62,13 @@ class RemotePython:
     async def wait_for_remote_kernel(self):
         batch = await self.activity.execute_commands(commands.Run('/usr/src/app/wait_for_kernel.sh'))
         await batch.wait()
-        logger.info('-----KERNEL SHOULD BE READY-----')
 
     async def execute(self, code):
         if self._ws is None:
             raise RuntimeError("RemotePython didn't start successfully")
 
         await self._send(code)
-        logger.info(f'-----AFTER SEND COMMAND TO REMOTE KERNEL-----sent: {str(code)}')
         response = await self._receive()
-        logger.info(f'-----RESPONSE: {str(response)}')
         return json.loads(response.decode())
 
     async def _send(self, code):
@@ -95,16 +81,12 @@ class RemotePython:
         #   NOTE: We always send a single message and receive a single response, so this simplified
         #         implementation should be OK - we never receive anything after the message_len.
         init_data = await self._ws.recv()
-        logger.info(pprint.pformat(init_data))
 
         message_len, data = init_data.split(b' ', maxsplit=1)
         message_len = int(message_len.decode())
 
         while len(data) < message_len:
             data_incr = await self._ws.recv()
-
-            logger.info(pprint.pformat(data_incr))
-
             data += data_incr
 
         return data

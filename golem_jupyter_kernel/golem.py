@@ -21,15 +21,6 @@ from .remote_python import RemotePython
 from . import TMPDIR_PATH
 
 
-import logging
-logger = logging.getLogger()
-handler = logging.StreamHandler()
-formatter = logging.Formatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logger.setLevel(logging.INFO)
-
 KERNEL_IMAGE_TAG = 'stan7123/jupyter-kernel:latest'
 
 YAGNA_APPNAME_JUPYTER = 'jupyterongolem'
@@ -323,13 +314,9 @@ class Golem:
             await self._allocation.release()
             self._allocation = None
 
-        async def on_event(event) -> None:
-            logger.info(f'-----EVENT: {event}')
-
         if self._golem_node is None:
             self._loop = asyncio.get_running_loop()
             self._golem_node = GolemNode(self._get_or_create_yagna_appkey())
-            self._golem_node.event_bus.listen(on_event)
             await self._golem_node.start()
 
         check_call(["yagna", "payment", "init", "--network", network])
@@ -397,7 +384,6 @@ class Golem:
             Buffer(size=1),
         )
         async for activity in chain:
-            logger.info(f'-----ACTIVITY YIELDED: {str(activity)}')
             yield activity
 
     async def _disconnect_and_pay(self):
