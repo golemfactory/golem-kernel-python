@@ -15,6 +15,7 @@ from golem_core.core.market_api import ManifestVmPayload
 from golem_core.core.market_api.pipeline import default_negotiate, default_create_agreement, default_create_activity
 import humanize
 from pytimeparse import parse as parse_to_seconds
+import websockets
 
 from .remote_python import RemotePython
 from . import TMPDIR_PATH
@@ -146,8 +147,13 @@ class Golem:
         elif not self.connected:
             yield f"Provider not connected. Available commands: {', '.join(local_commands)}.", False
         else:
-            async for out in self._alter_and_run_remote_command(code):
-                yield out
+            try:
+                async for out in self._alter_and_run_remote_command(code):
+                    yield out
+            except websockets.ConnectionClosedError:
+                yield "Encountered connection problem with provider.", False
+                async for out in self._run_local_command('%disconnect'):
+                    yield out, False
 
     async def aclose(self):
         #   NOTE: We don't wait for invoices here.
