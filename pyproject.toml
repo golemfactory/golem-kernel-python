@@ -3,11 +3,10 @@ requires = ["poetry_core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "golem-jupyter-kernel"
-version = "0.2.2"
-description = "Jupyter Kernel on Golem (https://www.golem.network/)"
-readme = "README.md"
-authors = ["GolemFactory <jupyter@golem.network>"]
+name = "jupyter-on-golem"
+version = "0.1.0"
+description = "Jupyter Python kernel running on Golem network (https://www.golem.network/)"
+authors = ["GolemFactory <contact.jupyter@golem.network>"]
 license = "LGPL-3.0-or-later"
 classifiers = [
     "Development Status :: 3 - Alpha",

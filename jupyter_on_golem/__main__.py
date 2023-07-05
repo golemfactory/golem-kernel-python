@@ -9,7 +9,7 @@ from jupyter_client.kernelspec import KernelSpecManager
 from .golem_kernel import GolemKernel
 
 KERNEL_DICT = {
-    "argv": ["python", "-m", "golem_jupyter_kernel", "-f", "{connection_file}"],
+    "argv": ["python", "-m", "jupyter_on_golem", "-f", "{connection_file}"],
     "display_name": "Golem",
     "language": "python",
 }

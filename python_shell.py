@@ -7,7 +7,7 @@ from golem_core.mid import (
     default_negotiate, default_create_agreement, default_create_activity
 )
 
-from golem_jupyter_kernel.remote_python import RemotePython
+from jupyter_on_golem.remote_python import RemotePython
 from yapapi.payload import vm
 
 PAYLOAD = Payload.from_image_hash(
