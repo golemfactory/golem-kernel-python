@@ -44,7 +44,7 @@ jupyter-lab
 
 When above steps are completed Golem kernel should be visible and available in JupyterLab web interface:
 
-Lorem Ipsum Picture here.
+![Screenshot of a Golem kernel visible in JupyterLab web interface.](https://github.com/golemfactory/golem-kernel-python/blob/7f8669fbef78bfb4dc6ff9fbddc41e63d81bb2ba/Jupyter_on_Golem_kernel.png)
 
 ## Usage
 
@@ -67,7 +67,7 @@ In JupyterLab Web Interface click on Golem under the Notebook section to open ne
 %help
 ```
 
-Lorem Ipsum Picture here.
+![Screenshot of a Golem help output in JupyterLab web interface.](https://github.com/golemfactory/golem-kernel-python/blob/7f8669fbef78bfb4dc6ff9fbddc41e63d81bb2ba/Jupyter_on_Golem_help.png)
 
 **After You close JupyterLab You can press Ctrl+C in Yagna terminal window to turn it off.** 
 
