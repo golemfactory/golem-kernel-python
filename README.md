@@ -15,7 +15,7 @@ Jupyter on Golem needs some prerequsites. Please make sure you have the followin
 
     It most likely need no introduction. As stated on Jupyter Project webpage, JupyterLab is "highly extensible, feature-rich notebook authoring application and editing environment, and is a part of Project Jupyter, a large umbrella project centered around the goal of providing tools (and standards) for interactive computing with computational notebooks". To easy install JupoyterLab follow instructions provided on Jupyter Project webpage: https://jupyter.org/install
 
-    TLDR Installation:
+    TLDR install JupyterLab:
     ```
     pip install jupyterlab
     ```
@@ -24,52 +24,67 @@ Jupyter on Golem needs some prerequsites. Please make sure you have the followin
 
     Yagna is a default implementation of Golem Network Node. It will act as an intermediary for JupyterLab to be able to communicate with Golem Network and find provider to execute our Jupyter Notebooks. Yagna can work in two "modes": Requestor or Provider. Jupyter on Golem needs Yagna to run in Requestor mode. To easy install Yagna as a Requestor follow instructions provided on Golem Network webpage: https://handbook.golem.network/requestor-tutorials/flash-tutorial-of-requestor-development#easy-installation
 
-    TLDR Installation:
+    TLDR install Yagna:
     ```
     curl -sSf https://join.golem.network/as-requestor | bash -
     ```
 
+*   **Increased number of open file descriptors - macOS only!**
+
+    This change is required for **macOS users only!** To apply it open terminal and perform following steps:
+
+    Check Your current limit value of open file descriptors (most likely it will be 256) and write it down so You can go back to it if needed later:
+    ```
+    ulimit -n
+    ```
+
+    Increase the limit to 65565:
+    ```
+    ulimit -n 65565 
+    ```
+    Verify that the change took place:
+    ```
+    ulimit -n
+    ```
+
 ## Installation
 
+Install Jupyter on Golem package from PyPI:
 ```
-#   Install Jupyter on Golem package from PyPI
 pip install jupyter-on-golem
-
-#   Add jupyter-on-golem to the list of known kernels
-python -m jupyter_on_golem install
-
-#   Start Jupyter in a browser to verify installation process
-jupyter-lab
 ```
 
-When above steps are completed Golem kernel should be visible and available in JupyterLab web interface:
-
-![Screenshot of a Golem kernel visible in JupyterLab web interface.](https://github.com/golemfactory/golem-kernel-python/blob/7f8669fbef78bfb4dc6ff9fbddc41e63d81bb2ba/Jupyter_on_Golem_kernel.png)
+Add jupyter-on-golem to the list of known kernels:
+```
+python -m jupyter_on_golem install
+```
 
 ## Usage
 
 Jupyter on Golem needs Yagna running on Your host to be able to talk with Golem Network. You can run it with single command (preferably in the separate Console Window):
 
 ```
-#   Start Yagna on Your Host
 yagna service run
 ```
 With Yagna up and running You can start JupyterLab in standard fashion:
 
 ```
-#   Start jupyter in a browser
 jupyter-lab
 ```
-In JupyterLab Web Interface click on Golem under the Notebook section to open new Notebook. You should be able to run Jupyter on Golem magic commands:
+
+If installation process was completed correctly then Golem kernel should be visible and available in JupyterLab web interface:
+
+![Screenshot of a Golem kernel visible in JupyterLab web interface.](https://github.com/golemfactory/golem-kernel-python/blob/7f8669fbef78bfb4dc6ff9fbddc41e63d81bb2ba/Jupyter_on_Golem_kernel.png)
+
+Click on the upper Golem icon (right under the Notebook section) to open new Notebook. You should be able to run Jupyter on Golem magic commands like _%help_ ,which will display the most important information about Jupyter on Golem:
 
 ```
-#   Display information about Jupyter on Golem
 %help
 ```
 
 ![Screenshot of a Golem help output in JupyterLab web interface.](https://github.com/golemfactory/golem-kernel-python/blob/7f8669fbef78bfb4dc6ff9fbddc41e63d81bb2ba/Jupyter_on_Golem_help.png)
 
-**After You close JupyterLab You can press Ctrl+C in Yagna terminal window to turn it off.** 
+**When You finish using Jupyter on Golem You can close JupyterLab (File -> Shut Down) and press Ctrl+C in Yagna terminal window to turn it off.** 
 
 ## Commands
 
@@ -110,11 +125,13 @@ Sample usage:
 %connect mem>4 disk>100 cores>2 strategy=random image_hash=5389c01c128f94f14653bc0b56822c22b4b3987737ef8f3c0ac61946
 ```
 
+Might be good idea to take Go of coffee teams or tea.
+
 ### %disconnect
 
 End work (on the current provider, you can connect to another one later) and pay.
 
-### pip install
+### %pip install
 
 Lorem Ipsum
 
@@ -131,3 +148,24 @@ To run example you need to import to Your Jupyter this file:
 ## Feedback
 
 Lorem Ipsum - how to provide feedback
+
+## Troubleshooting
+
+Lorem Ipsum - typical problems
+
+### 1. Testnet (Goerli) fund lack of tGLM**:
+
+Lorem Ipsum solution
+
+**Solution A - Id on Yagna**
+
+```
+yagna id update 0x4f597d426bc06ed463cd2639cd5451667f9c3e3d --set-default
+
+yagna id create --from-keystore
+```
+
+**Solution B - Metamask**
+
+
+
