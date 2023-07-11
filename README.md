@@ -6,7 +6,13 @@ Jupyter on Golem is a JupyterLab Python kernel (https://jupyterlab.readthedocs.i
 
 JupyterLab is an open-source project that is widely used by data scientists, analysts, researchers and developers. It allows you to create and share Notebooks - documents that combine code, equations, visualisations and narrative text. JupyterLab is part of Project Jupyter, umbrella project born from IPython Project (https://ipython.org/) and centered around providing tools for interactive computing with computational notebooks. Find more about Jupyter Project: https://jupyter.org/
 
-Lorem Ipsum - TODO Draw.io here?
+**Simplified view on JupyterLab:**
+
+![Simplified Diagram of a JupyterLab flow](https://github.com/golemfactory/golem-kernel-python/blob/2fac592d6dbcd88f73b830cabee774702c32326e/jupyterlab.png)
+
+**Simplified view on Jupyter on Golem:**
+
+![Simplified Diagram of a Jupyter on Golem flow](https://github.com/golemfactory/golem-kernel-python/blob/2fac592d6dbcd88f73b830cabee774702c32326e/jupyter_golem.png)
 
 Jupyter on Golem comes with following PyPI packages preinstallled:
 *   jupyter         - version 1.0.0
