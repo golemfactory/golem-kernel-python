@@ -2,10 +2,19 @@
 
 ## About
 
-Lorem Ipsum - What is it
-Lorem Ipsum - Clear reference to Jupytger Project
+Jupyter on Golem is a JupyterLab Python kernel (https://jupyterlab.readthedocs.io), which enables you to run your Python Notebooks using resources available on decentralized Golem Network (https://www.golem.network/). Providers of such resources are compensated for their work with GLM tokens.
 
-Jupyter on Golem comes with following PyPI preinstallled. Other packages can be installed  as described in Commands sexctions.
+JupyterLab is an open-source project that is widely used by data scientists, analysts, researchers and developers. It allows you to create and share Notebooks - documents that combine code, equations, visualisations and narrative text. JupyterLab is part of Project Jupyter, umbrella project born from IPython Project (https://ipython.org/) and centered around providing tools for interactive computing with computational notebooks. Find more about Jupyter Project: https://jupyter.org/
+
+Lorem Ipsum - TODO Draw.io here?
+
+Jupyter on Golem comes with following PyPI packages preinstallled:
+*   jupyter         - version 1.0.0
+*   pandas          - version 2.0.2
+*   tensorflow-cpu  - version 2.12.0
+*   matplotlib      - version 3.7.1
+
+Other packages can be installed on the Provider's host with `%pip install` command as described in Commands section of this document.
 
 ## Prerequisites
 
@@ -46,6 +55,9 @@ Jupyter on Golem needs some prerequsites. Please make sure you have the followin
     ```
     ulimit -n
     ```
+
+*   **GLM tokens**
+    Golem is a Decentralized network.
 
 ## Installation
 
@@ -145,6 +157,8 @@ To run example you need to import to Your Jupyter this file:
 *   **Testnet (Goerli) example notebook**: Lorem Ipsum  Github URL HERE
 *   **Mainnet (Polygon) example notebook**: Lorem Ipsum  Github URL HERE
 
+## Limitations
+
 ## Feedback
 
 Lorem Ipsum - how to provide feedback
@@ -166,6 +180,8 @@ yagna id create --from-keystore
 ```
 
 **Solution B - Metamask**
+
+### 2. pip install returns error**:
 
 
 
