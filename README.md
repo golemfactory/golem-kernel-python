@@ -168,9 +168,9 @@ Lorem Ipsum
 We have prepared some examples to help you play around with Jupyter on Golem and better feel what this solution is capable of. Examples and Data Sets are based on
 To run examples you need to import to Your Jupyter following files:
 
-*   **Testnet (Goerli) example notebook**: < Github URL HERE >
-*   **Mainnet (Polygon) example notebook**: < Github URL HERE >
-*   **Data Set (for both Testnet and Mainnet)**: < Github URL HERE >
+*   **Testnet (Goerli) example notebook**: https://github.com/golemfactory/golem-kernel-python/blob/685ff1b64abbd1d71ccca27c298b32f79700a22d/examples/goerli_testnet_example.ipynb
+*   **Mainnet (Polygon) example notebook**: https://github.com/golemfactory/golem-kernel-python/blob/685ff1b64abbd1d71ccca27c298b32f79700a22d/examples/polygon_mainnet_example.ipynb
+*   **Data Set (for both Testnet and Mainnet)**: https://github.com/golemfactory/golem-kernel-python/blob/685ff1b64abbd1d71ccca27c298b32f79700a22d/examples/california_housing_train.csv 
 
 ## Limitations
 
