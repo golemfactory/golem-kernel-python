@@ -20,7 +20,7 @@ Jupyter on Golem comes with following PyPI packages preinstallled:
 *   tensorflow-cpu  - version 2.12.0
 *   matplotlib      - version 3.7.1
 
-Other packages can be installed on the Provider's host with `%pip install` command as described in Commands section of this document.
+Other packages can be installed on the Provider's host with `%pip install` command as described in **Commands** section of this document.
 
 ## Prerequisites
 
@@ -44,6 +44,19 @@ Jupyter on Golem needs some prerequsites. Please make sure you have the followin
     curl -sSf https://join.golem.network/as-requestor | bash -
     ```
 
+*   **GLM tokens**
+
+    Golem is a Decentralized Network where Requestors (those who need computational resources) meet with Providers (those who rent such resources). Jupyter on Golem acts as a Requestor and consequently need a way to compensate Providers for their work. Golem utilize Blockchain technology to provide censorship resistant payments with GLM tokens (https://www.golem.network/glm). 
+    
+    **To sum it up You will need GLM tokens and some Network native tokens (ETH/Matic) for transaction fees to use Jupyter on Golem!** 
+    
+    However, We are aware that for some people Blockchain might be a little bit tricky at the start. That is why we have prepared two example scenarios of using Jupyter on Golem. One of them does not require from You any prior ownership of GLM tokens and is perfect for a first try!
+    
+    *   **Testnet (Goerli) - For Blockchain newbies**: This example will be performed on Testnet and as a result will not require from You any prior Blockchain knowledge. Testnet still needs tokens to pay providers but those will be given via `%fund` command. Nevertheless, You need to take into account that Testnet is for testing purposes. In other words it might be unstable from time to time and offers smaller amount of providers with less powerful equipment.
+    *   **Mainnet (Polygon) - For Blockchain pros**: This one assumes that You are familliar with Blockchain and are fully capable of obtaining GLM + Matic tokens on your own. Mainnet is more stable and offers more powerful providers.
+
+    Both scenarios are linked in **Examples** section of this document.
+
 *   **Increased number of open file descriptors - macOS only!**
 
     This change is required for **macOS users only!** To apply it open terminal and perform following steps:
@@ -61,9 +74,6 @@ Jupyter on Golem needs some prerequsites. Please make sure you have the followin
     ```
     ulimit -n
     ```
-
-*   **GLM tokens**
-    Golem is a Decentralized network.
 
 ## Installation
 
@@ -155,19 +165,24 @@ Lorem Ipsum
 
 ## Examples
 
-We have prepared some examples to help you play around with Jupyter on Golem and better feel what it is capable of
+We have prepared some examples to help you play around with Jupyter on Golem and better feel what this solution is capable of. Examples and Data Sets are based on
+To run examples you need to import to Your Jupyter following files:
 
-Examples are based on
-To run example you need to import to Your Jupyter this file:
-
-*   **Testnet (Goerli) example notebook**: Lorem Ipsum  Github URL HERE
-*   **Mainnet (Polygon) example notebook**: Lorem Ipsum  Github URL HERE
+*   **Testnet (Goerli) example notebook**: < Github URL HERE >
+*   **Mainnet (Polygon) example notebook**: < Github URL HERE >
+*   **Data Set (for both Testnet and Mainnet)**: < Github URL HERE >
 
 ## Limitations
 
+Jupyter on Golem is in its infancy stage. Consequently, it has many limitations You should be aware of. The most imporant are listed below:
+
+* ABC
+* ABC
+* ABC
+
 ## Feedback
 
-Lorem Ipsum - how to provide feedback
+Did You try Jupyter on Golem? We would love to get a feedback from You! Please do it under this link: < LINK HERE >
 
 ## Troubleshooting
 
