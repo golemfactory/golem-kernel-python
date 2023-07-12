@@ -1,0 +1,25 @@
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "jupyter-on-golem"
+version = "0.1.0"
+description = "Jupyter Python kernel running on Golem network (https://www.golem.network/)"
+authors = ["GolemFactory <contact.jupyter@golem.network>"]
+license = "LGPL-3.0-or-later"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: AsyncIO",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Distributed Computing"
+]
+keywords = ["golem", "jupyter", "kernel", "notebook"]
+
+[tool.poetry.dependencies]
+python = "^3.8.0"
+jupyter = "1.0.0"
+websockets = "10.*"
+golem-api-python = "0.1.1"
+pytimeparse = "1.*"
+humanize = "4.*"

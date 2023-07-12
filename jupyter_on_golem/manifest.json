@@ -1,0 +1,42 @@
+{
+  "version": "0.1.0",
+  "createdAt": "2023-03-29T12:51:00.000000Z",
+  "expiresAt": "2100-01-01T00:01:00.000000Z",
+  "metadata": {
+    "name": "Jupyter lab",
+    "description": "Jupyter lab with outbound internet enabled",
+    "version": "0.1.0"
+  },
+  "payload": [
+    {
+      "platform": {
+        "arch": "x86_64",
+        "os": "linux"
+      },
+      "urls": [
+        "{image_url}"
+      ],
+      "hash": "sha3:{sha3}"
+    }
+  ],
+  "compManifest": {
+    "version": "0.1.0",
+    "script": {
+      "commands": [
+        "run .*",
+        "transfer .*"
+      ],
+      "match": "regex"
+    },
+    "net": {
+      "inet": {
+        "out": {
+          "protocols": ["https"],
+          "urls": [
+            "https://pypi.dev.golem.network"
+          ]
+        }
+      }
+    }
+  }
+}

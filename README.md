@@ -1,31 +1,63 @@
-# This is a WIP of Jupyter Kernel notebook
+# Golem Kernel
 
-## Installation
+## Installation & usage
 
-```
-python3 -m pip install -U pip
-python3 -m pip install -r requirements.txt
-```
-
-## Running Jupyter Notebook
+This assumes you have a running `yagna` and `YAGNA_APPKEY` variable is set.
 
 ```
-python3 -m jupyter notebook
-```
-or just
-```
-jupyter notebook
+#   Install packages
+pip3 install jupyterlab jupyter-on-golem
+
+#   Add golem-kernel to the list of known kernels
+python3 -m jupyter_on_golem install
+
+#   Start jupyter in a browser. Golem kernel should be available.
+jupyter-lab
 ```
 
-## Description
+## Example usage
 
-### Which file does what
+Check the [`demo.ipynb`](demo.ipynb) notebook.
 
-- **[Untitled.ipynb](Untitled.ipynb)** - an example notebook file that can be opened in jupyter and executed.
-Right now it's demonstrating that our custom kernel echoing back the command being sent. 
-- **[repl.py](repl.py)** - a script file that handles REPL functionality based on STDIN and STDOUT
-- **[kernel.py](kernel.py)** - an implementation of a custom kernel that has access to the cell content sent by the web
-user to parse, but for now just echoes it back
-- **[kernel.json](kernel.json)** - a kernel definition file that is used to add a custom kernel to the web interface
-- **[golem_requestor.py](golem_requestor.py)** an initial (incorrect) attempt to create a service hosting a REPL on Golem
-and communicating with it via STDIN and STDOUT
+## Magic commands
+
+### %status
+
+Shows the amount of tokens on the testnet and mainnet.
+
+### %fund
+
+Get some funds, if you need them. You can only get testnet tokens this way.
+
+```
+%fund goerli
+```
+
+### %budget
+
+Define a budget for computations.
+
+```
+%budget goerli 1
+```
+
+### %connect
+
+Connect to a provider.
+
+You can specify:
+
+*   Minimal amount of RAM, disk and cores
+*   Provider selection strategy (available strategies: "bestprice" - default, cheapest provider, "random" - random provider)
+*   Image hash - [creating Golem images](https://handbook.golem.network/requestor-tutorials/vm-runtime/convert-a-docker-image-into-a-golem-image). This
+    defaults to an image built from the [`provider`](provider) directory. Your image must include everything specified in [`provider/Dockerfile`](provider/Dockerfile) (except `numpy`).
+
+Sample usage:
+
+```
+%connect mem>4 disk>100 cores>2 strategy=random image_hash=5389c01c128f94f14653bc0b56822c22b4b3987737ef8f3c0ac61946
+```
+
+### %disconnect
+
+End work (on the current provider, you can connect to another one later) and pay.
