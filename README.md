@@ -55,7 +55,7 @@ Jupyter on Golem needs some prerequsites. Please make sure you have the followin
     *   **Testnet (Goerli) - For Blockchain newbies**: This example will be performed on Testnet and as a result will not require from You any prior Blockchain knowledge. Testnet still needs tokens to pay providers but those will be given via `%fund` command. Nevertheless, You need to take into account that Testnet is for testing purposes. In other words it might be unstable from time to time and offers smaller amount of providers with less powerful equipment.
     *   **Mainnet (Polygon) - For Blockchain pros**: This one assumes that You are familliar with Blockchain and are fully capable of obtaining GLM + Matic tokens on your own. Mainnet is more stable and offers more powerful providers.
 
-    Both scenarios are linked in **Examples** section of this document.
+    Both scenarios are linked in [Examples](#examples) section of this document.
 
 *   **Increased number of open file descriptors - macOS only!**
 
@@ -116,13 +116,30 @@ Click on the upper Golem icon (right under the Notebook section) to open new Not
 
 ## Commands
 
-#### %status
+Below You will find the list of all Jupter on Golem magic commands which are required to interact with this tool.
 
-Shows the amount of tokens on the testnet and mainnet.
+Magic commands is the concept of IPython (default kernel of JupyterLab). If you want to learn more then You should visit: https://ipython.readthedocs.io/en/stable/interactive/tutorial.html#magic-functions
+
+### %help
+
+Shows Jupyter on Golem basic information and list of available magic commands with a short description.
+
+### %status
+
+Shows the current status of Jupyter on Golem. With this command You can get following information:
+
+*   **Your YAGNA node ID**
+*   **Your YAGNA wallet address** - You should sent there GLM and MATIC tokens if You want to use Golem mainnet. By default wallet address is the same as node ID
+*   **Amount of tokens (GLM,MATIC) hold by your wallet on Mainnet**
+*   **Amount of tokens (tGLM,tETH) hold by your wallet on Testnet**
+*   **Current connection status** - Disconnected or Established
+    *   **Name and Node ID of a Provider** - for Established connections only
+    *   **Resources of a Provider (RAM, DISK, CPU)** - for Established connections only
+    *   **Elapsed connection time** - for Established connections only
 
 ### %fund
 
-Get some funds, if you need them. You can only get testnet tokens this way.
+Requests for Goerli testnet tokens: tGLM and tETH. You can only get Goerli testnet tokens this way.
 
 ```
 %fund goerli
@@ -130,79 +147,80 @@ Get some funds, if you need them. You can only get testnet tokens this way.
 
 ### %budget
 
-Define a budget for computations.
+Allocates budget (GLM/tGLM) from funds in Your wallet for computation purposes on Jupter on Golem. It also sets the network to which you will connect when using `%connect` command! Using this command multiple times will each time overwrite the previous settings.
 
+To setup for Goerli Testnet and Allocate 2 tGLM:
 ```
 %budget goerli 1
 ```
 
+To setup for Polygon Mainnet and Allocate 2 tGLM:
+```
+%budget polygon 2
+```
+
 ### %connect
 
-Connect to a provider.
+Initialize a connection with a provider fulfilling specified requirements.
 
-You can specify:
+following requirements can be specified:
 
-*   Minimal amount of RAM, disk and cores
-*   Provider selection strategy (available strategies: "bestprice" - default, cheapest provider, "random" - random provider)
-*   Image hash - [creating Golem images](https://handbook.golem.network/requestor-tutorials/vm-runtime/convert-a-docker-image-into-a-golem-image). This
-    defaults to an image built from the [`provider`](provider) directory. Your image must include everything specified in [`provider/Dockerfile`](provider/Dockerfile) (except `numpy`).
+*  **Minimal amount of RAM (GB)** - mem
+*  **Minimal amount of disk space (GB)** - disk
+*  **Minimal amount of CPU cores** - cores
 
-Sample usage:
+Please take into account that Golem Network is a free market and Jupyter on Golem uses best price strategy (i.e. choosing the cheapest option among all offers received). Sometimes it might take a litle bit longer to find a provider and setup him for work. To define how much You are willing to wait You can use timeout parameter. Default timeout is set to 10 minutes (`timeout=10m`)
 
+Sample connect command requesting for provider with at least 4GM of RAM, 10GB of Disk space and 2 CPU cores:
 ```
-%connect mem>4 disk>100 cores>2 strategy=random image_hash=5389c01c128f94f14653bc0b56822c22b4b3987737ef8f3c0ac61946
+%connect mem>4 disk>10 cores>2
 ```
 
-Might be good idea to take Go of coffee teams or tea.
+Sample connect command with timeout set to 15 minutes, requesting for provider with at least 4GM of RAM, 10GB of Disk space and 2 CPU cores:
+```
+%connect mem>4 disk>10 cores>2 timeout=15m
+```
 
 ### %disconnect
 
-End work (on the current provider, you can connect to another one later) and pay.
+Disconnects from the current provider and initializes the payment transaction. It also shows following information:
+*   Elapsed connection time
+*   Total cost of the connection
+*   Remaining allocation
 
 ### %pip install
 
-Lorem Ipsum
+Installs specified pip package. It is imporant to do it as a magic command (with % prefix) for installation to be completed correctly!
+
+For instance, to add some colors to Your notebook You can install colorama package:
+```
+%pip install colorama
+```
 
 ## Examples
 
-We have prepared some examples to help you play around with Jupyter on Golem and better feel what this solution is capable of. Examples and Data Sets are based on
-To run examples you need to import to Your Jupyter following files:
+We have prepared some examples to help you play around with Jupyter on Golem and better feel what this solution is capable of. To run examples you need to import to Your JupyterLab following files:
 
-*   **Testnet (Goerli) example notebook**: https://github.com/golemfactory/golem-kernel-python/blob/685ff1b64abbd1d71ccca27c298b32f79700a22d/examples/goerli_testnet_example.ipynb
-*   **Mainnet (Polygon) example notebook**: https://github.com/golemfactory/golem-kernel-python/blob/685ff1b64abbd1d71ccca27c298b32f79700a22d/examples/polygon_mainnet_example.ipynb
-*   **Data Set (for both Testnet and Mainnet)**: https://github.com/golemfactory/golem-kernel-python/blob/685ff1b64abbd1d71ccca27c298b32f79700a22d/examples/california_housing_train.csv 
+*   [Testnet (Goerli) example notebook](https://github.com/golemfactory/golem-kernel-python/blob/685ff1b64abbd1d71ccca27c298b32f79700a22d/examples/goerli_testnet_example.ipynb)
+*   [Mainnet (Polygon) example notebook](https://github.com/golemfactory/golem-kernel-python/blob/685ff1b64abbd1d71ccca27c298b32f79700a22d/examples/polygon_mainnet_example.ipynb)
+*   [Data Set (for both Testnet and Mainnet)](https://github.com/golemfactory/golem-kernel-python/blob/685ff1b64abbd1d71ccca27c298b32f79700a22d/examples/california_housing_train.csv) 
+
+Above examples are modification of "Linear Regression with a Real Dataset" Notebook from Machine Learning Crash Course created by Google: [LINK](https://github.com/google/eng-edu/blob/main/ml/cc/exercises/linear_regression_with_a_real_dataset.ipynb). All exercises are made available under the [Apache License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
+Data Set contains data drawn from the 1990 U.S. Census. It is also available as part of Machine Learning Crash Course created by Google: [LINK](https://download.mlcc.google.com/mledu-datasets/california_housing_train.csv). Tou can find data description [HERE](https://developers.google.com/machine-learning/crash-course/california-housing-data-description)
 
 ## Limitations
 
 Jupyter on Golem is in its infancy stage. Consequently, it has many limitations You should be aware of. The most imporant are listed below:
 
-* ABC
-* ABC
-* ABC
+* Currently Golem Network does not support easy way to utilize provider's GPU. Consequently, Jupyter on Golem is limited to utilize RAM, Disk space and CPU from the provider's resources.
+* Data sets, results and other files need to be downloaded and uploaded via Requestor (i.e. Jupyter on Golem). In other words if You want to use some data sets from the Internet you need to download it locally first and then push into the provider host with `%upload` command.
+* Installing Python libraries is limited to PyPI with PIP.
+* Using `%pip install` does not present live progress output. However, there is a spinner icon to let You know that installation process in ongoing.
+* Outbound Internet access is limited to the most important services like above mentioned PyPI with PIP. Don't be surprised that other calls might not work.
+* It might take a while to `%connect` to provider. Specifics depends on many factors, yet usually it takes something between 3 up to 10 minutes. You can also use `timeout=10m` paremeter to define how much are you willing to wait. In general we recommend to use this time to get a tea or coffee ;)
+* Currently only post-paid payments are supported. Single payment transaction is initialized after Requestor (Jupter on Golem) disconnects from the Provider.
 
 ## Feedback
 
-Did You try Jupyter on Golem? We would love to get a feedback from You! Please do it under this link: < LINK HERE >
-
-## Troubleshooting
-
-Lorem Ipsum - typical problems
-
-### 1. Testnet (Goerli) fund lack of tGLM**:
-
-Lorem Ipsum solution
-
-**Solution A - Id on Yagna**
-
-```
-yagna id update 0x4f597d426bc06ed463cd2639cd5451667f9c3e3d --set-default
-
-yagna id create --from-keystore
-```
-
-**Solution B - Metamask**
-
-### 2. pip install returns error**:
-
-
-
+Did You try Jupyter on Golem? We would love to get to know your thoughts! Please give us your feedback [HERE](https://qkjx8blh5hm.typeform.com/JoGfeedback)
