@@ -231,6 +231,6 @@ If you experience problems with Jupyter on Golem, You can try to get some help i
 * **jupyter-on-golem** channel on our Golem Network [Discord Server](https://chat.golem.network/)
 * [Github Repository](https://github.com/golemfactory/golem-kernel-python) of the project
 
-## Disclaimer
+## Terms and Conditions
 
 By using Jupyter on Golem you agree to be bound by the terms described in Golem Network [Disclaimer](https://www.golem.network/disclaimer), [User Interaction Guidelines](https://www.golem.network/uig) and [Privacy Policy](https://www.golem.network/privacy).
