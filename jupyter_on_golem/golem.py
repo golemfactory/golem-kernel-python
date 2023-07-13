@@ -60,7 +60,7 @@ COMMANDS:
     %download	 	Downloads file from Provider's ./workdir folder to local machine, e.g. '%download dataset.csv'
     %upload		Uploads file from local machine into Provider's ./workdir folder, e.g. '%upload results.csv'
     %help		Shows this message    
-    %pip install    Installs PyPI package on the Provider's host, e.g. "%pip install colorama"
+    %pip install        Installs PyPI package on the Provider's host, e.g. "%pip install colorama"
 
 '''
 
