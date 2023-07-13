@@ -169,7 +169,7 @@ following requirements can be specified:
 *  **Minimal amount of disk space (GB)** - disk
 *  **Minimal amount of CPU cores** - cores
 
-Please take into account that Golem Network is a free market and Jupyter on Golem uses best price strategy (i.e. choosing the cheapest option among all offers received). Sometimes it might take a litle bit longer to find a provider and setup him for work. To define how much You are willing to wait You can use timeout parameter. Default timeout is set to 10 minutes (`timeout=10m`)
+Please take into account that sometimes it might take a litle bit longer to find a provider and setup him for work. To define how much You are willing to wait You can use timeout parameter. Default timeout is set to 10 minutes (`timeout=10m`)
 
 Sample connect command requesting for provider with at least 4GM of RAM, 10GB of Disk space and 2 CPU cores:
 ```
@@ -201,9 +201,9 @@ For instance, to add some colors to Your notebook You can install colorama packa
 
 We have prepared some examples to help you play around with Jupyter on Golem and better feel what this solution is capable of. To run examples you need to import to Your JupyterLab following files:
 
-*   [Testnet (Goerli) example notebook](https://github.com/golemfactory/golem-kernel-python/blob/ced1615f5ba8ac203d8bf01345cffa023832708c/examples/goerli_testnet_example.ipynb)
-*   [Mainnet (Polygon) example notebook](https://github.com/golemfactory/golem-kernel-python/blob/ced1615f5ba8ac203d8bf01345cffa023832708c/examples/polygon_mainnet_example.ipynb)
-*   [Data Set (for both Testnet and Mainnet)](https://github.com/golemfactory/golem-kernel-python/blob/ced1615f5ba8ac203d8bf01345cffa023832708c/examples/california_housing_train.csv) 
+*   [Testnet (Goerli) example notebook](https://github.com/golemfactory/golem-kernel-python/blob/master/examples/goerli_testnet_example.ipynb)
+*   [Mainnet (Polygon) example notebook](https://github.com/golemfactory/golem-kernel-python/blob/master/examples/polygon_mainnet_example.ipynb)
+*   [Data Set (for both Testnet and Mainnet)](https://github.com/golemfactory/golem-kernel-python/blob/master/examples/california_housing_train.csv) 
 
 Above examples are modification of "Linear Regression with a Real Dataset" Notebook from Machine Learning Crash Course created by Google: [LINK](https://github.com/google/eng-edu/blob/main/ml/cc/exercises/linear_regression_with_a_real_dataset.ipynb). All exercises are made available under the [Apache License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
@@ -220,6 +220,7 @@ Jupyter on Golem is in its infancy stage. Consequently, it has many limitations 
 * Outbound Internet access is limited to the most important services like above mentioned PyPI with PIP. Don't be surprised that other calls might not work.
 * It might take a while to `%connect` to provider. Specifics depends on many factors, yet usually it takes something between 3 up to 10 minutes. You can also use `timeout=10m` paremeter to define how much are you willing to wait. In general we recommend to use this time to get a tea or coffee ;)
 * Currently only post-paid payments are supported. Single payment transaction is initialized after Requestor (Jupter on Golem) disconnects from the Provider.
+* Golem Network is a free market where You receive multiple offers for a single demand. Multiple strategies can be applied to chose the offer. However, currently Jupyter on Golem supports only random strategy (i.e. choosing the random option among all offers received).
 
 ## Feedback
 
