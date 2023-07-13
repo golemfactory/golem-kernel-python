@@ -46,7 +46,7 @@ HELP_TEMPLATE = '''\
     | |_   _ _ __  _   _| |_ ___ _ __    ___  _ __    / ___| ___ | | ___ _ __ ___  
  _  | | | | | '_ \| | | | __/ _ \ '__|  / _ \| '_ \  | |  _ / _ \| |/ _ \ '_ ` _ \ 
 | |_| | |_| | |_) | |_| | ||  __/ |    | (_) | | | | | |_| | (_) | |  __/ | | | | |
- \___/ \__,_| .__/ \__, |\__\___|_|     \___/|_| |_|  \____|\___/|_|\___|_| |_| |_| version: 0.1.0
+ \___/ \__,_| .__/ \__, |\__\___|_|     \___/|_| |_|  \____|\___/|_|\___|_| |_| |_| version: 0.1.1
             |_|    |___/                                                           
 
 Easy to use tool to run Your Jupyter Notebooks on the Golem Network!
@@ -59,7 +59,8 @@ COMMANDS:
     %disconnect 	Disconnects from the currently active Provider
     %download	 	Downloads file from Provider's ./workdir folder to local machine, e.g. '%download dataset.csv'
     %upload		Uploads file from local machine into Provider's ./workdir folder, e.g. '%upload results.csv'
-    %help		Shows this message
+    %help		Shows this message    
+    %pip install    Installs PyPI package on the Provider's host, e.g. "%pip install colorama"
 
 '''
 
