@@ -6,6 +6,7 @@ build-backend = "poetry.core.masonry.api"
 name = "jupyter-on-golem"
 version = "0.1.0"
 description = "Jupyter Python kernel running on Golem network (https://www.golem.network/)"
+readme = "README.md"
 authors = ["GolemFactory <contact.jupyter@golem.network>"]
 license = "LGPL-3.0-or-later"
 classifiers = [
