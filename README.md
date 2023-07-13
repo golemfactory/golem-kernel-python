@@ -224,3 +224,13 @@ Jupyter on Golem is in its infancy stage. Consequently, it has many limitations 
 ## Feedback
 
 Did You try Jupyter on Golem? We would love to get to know your thoughts! Please give us your feedback [HERE](https://qkjx8blh5hm.typeform.com/JoGfeedback)
+
+## Support
+
+If you experience problems with Jupyter on Golem, You can try to get some help in the following places:
+* **jupyter-on-golem** channel on our Golem Network [Discord Server](https://chat.golem.network/)
+* [Github Repository](https://github.com/golemfactory/golem-kernel-python) of the project
+
+## Terms and Conditions
+
+By using Jupyter on Golem you agree to be bound by the terms described in Golem Network [Disclaimer](https://www.golem.network/disclaimer), [User Interaction Guidelines](https://www.golem.network/uig) and [Privacy Policy](https://www.golem.network/privacy).
