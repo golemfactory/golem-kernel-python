@@ -7,7 +7,6 @@ RUN apt-get update && apt-get install -y python3-pip python3.8-venv net-tools
 
 COPY requirements.txt .
 RUN python3 -m venv /usr/src/app/venv
-RUN /usr/src/app/venv/bin/pip install --upgrade pip
 RUN /usr/src/app/venv/bin/pip install wheel setuptools
 RUN /usr/src/app/venv/bin/pip install -r requirements.txt
 RUN rm requirements.txt
