@@ -201,9 +201,9 @@ For instance, to add some colors to Your notebook You can install colorama packa
 
 We have prepared some examples to help you play around with Jupyter on Golem and better feel what this solution is capable of. To run examples you need to import to Your JupyterLab following files:
 
-*   [Testnet (Goerli) example notebook](https://github.com/golemfactory/golem-kernel-python/blob/685ff1b64abbd1d71ccca27c298b32f79700a22d/examples/goerli_testnet_example.ipynb)
-*   [Mainnet (Polygon) example notebook](https://github.com/golemfactory/golem-kernel-python/blob/685ff1b64abbd1d71ccca27c298b32f79700a22d/examples/polygon_mainnet_example.ipynb)
-*   [Data Set (for both Testnet and Mainnet)](https://github.com/golemfactory/golem-kernel-python/blob/685ff1b64abbd1d71ccca27c298b32f79700a22d/examples/california_housing_train.csv) 
+*   [Testnet (Goerli) example notebook](https://github.com/golemfactory/golem-kernel-python/blob/ced1615f5ba8ac203d8bf01345cffa023832708c/examples/goerli_testnet_example.ipynb)
+*   [Mainnet (Polygon) example notebook](https://github.com/golemfactory/golem-kernel-python/blob/ced1615f5ba8ac203d8bf01345cffa023832708c/examples/polygon_mainnet_example.ipynb)
+*   [Data Set (for both Testnet and Mainnet)](https://github.com/golemfactory/golem-kernel-python/blob/ced1615f5ba8ac203d8bf01345cffa023832708c/examples/california_housing_train.csv) 
 
 Above examples are modification of "Linear Regression with a Real Dataset" Notebook from Machine Learning Crash Course created by Google: [LINK](https://github.com/google/eng-edu/blob/main/ml/cc/exercises/linear_regression_with_a_real_dataset.ipynb). All exercises are made available under the [Apache License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
