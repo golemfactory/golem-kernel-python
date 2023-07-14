@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "jupyter-on-golem"
-version = "0.1.1"
+version = "0.1.2"
 description = "Jupyter Python kernel running on Golem network (https://www.golem.network/)"
 readme = "README.md"
 authors = ["GolemFactory <contact.jupyter@golem.network>"]
