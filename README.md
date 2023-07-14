@@ -232,6 +232,14 @@ If you experience problems with Jupyter on Golem, You can try to get some help i
 * **jupyter-on-golem** channel on our Golem Network [Discord Server](https://chat.golem.network/)
 * [Github Repository](https://github.com/golemfactory/golem-kernel-python) of the project
 
+## Known Issues
+
+Below You will find list of known issues and potential solutions:
+
+### 1. Unsuccessful funding on Goerli Testnet:
+
+Sometimes after using `%fund goerli` command, You will get **"Funding failed"** output. It might happen due to delay between requesting tETH and tGLM by Jupyter on Golem. In most cases, it should be enough to just wait a few minutes. Afterwards, type `%status` command and You should be able to see that both tETH and tGLM have arrieved to Your wallet.
+
 ## Terms and Conditions
 
 By using Jupyter on Golem you agree to be bound by the terms described in Golem Network [Disclaimer](https://www.golem.network/disclaimer), [User Interaction Guidelines](https://www.golem.network/uig) and [Privacy Policy](https://www.golem.network/privacy).
