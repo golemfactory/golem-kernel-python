@@ -8,11 +8,11 @@ JupyterLab is an open-source project that is widely used by data scientists, ana
 
 **Simplified view on JupyterLab:**
 
-![Simplified Diagram of a JupyterLab flow](https://github.com/golemfactory/golem-kernel-python/blob/2fac592d6dbcd88f73b830cabee774702c32326e/jupyterlab.png)
+![Simplified Diagram of a JupyterLab flow](https://raw.githubusercontent.com/golemfactory/golem-kernel-python/master/images/jupyterlab.png)
 
 **Simplified view on Jupyter on Golem:**
 
-![Simplified Diagram of a Jupyter on Golem flow](https://github.com/golemfactory/golem-kernel-python/blob/2fac592d6dbcd88f73b830cabee774702c32326e/jupyter_golem.png)
+![Simplified Diagram of a Jupyter on Golem flow](https://raw.githubusercontent.com/golemfactory/golem-kernel-python/master/images/jupyter_golem.png)
 
 Jupyter on Golem comes with following PyPI packages preinstallled:
 *   jupyter         - version 1.0.0
@@ -102,7 +102,7 @@ jupyter-lab
 
 If installation process was completed correctly then Golem kernel should be visible and available in JupyterLab web interface:
 
-![Screenshot of a Golem kernel visible in JupyterLab web interface.](https://github.com/golemfactory/golem-kernel-python/blob/7f8669fbef78bfb4dc6ff9fbddc41e63d81bb2ba/Jupyter_on_Golem_kernel.png)
+![Screenshot of a Golem kernel visible in JupyterLab web interface.](https://raw.githubusercontent.com/golemfactory/golem-kernel-python/master/images/Jupyter_on_Golem_kernel.png)
 
 Click on the upper Golem icon (right under the Notebook section) to open new Notebook. You should be able to run Jupyter on Golem magic commands like _%help_ ,which will display the most important information about Jupyter on Golem:
 
@@ -110,7 +110,7 @@ Click on the upper Golem icon (right under the Notebook section) to open new Not
 %help
 ```
 
-![Screenshot of a Golem help output in JupyterLab web interface.](https://github.com/golemfactory/golem-kernel-python/blob/7f8669fbef78bfb4dc6ff9fbddc41e63d81bb2ba/Jupyter_on_Golem_help.png)
+![Screenshot of a Golem help output in JupyterLab web interface.](https://raw.githubusercontent.com/golemfactory/golem-kernel-python/master/images/Jupyter_on_Golem_help.png)
 
 **When You finish using Jupyter on Golem You can close JupyterLab (File -> Shut Down) and press Ctrl+C in Yagna terminal window to turn it off.** 
 
