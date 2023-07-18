@@ -243,3 +243,7 @@ Sometimes after using `%fund goerli` command, You will get **"Funding failed"** 
 ## Terms and Conditions
 
 By using Jupyter on Golem you agree to be bound by the terms described in Golem Network [Disclaimer](https://www.golem.network/disclaimer), [User Interaction Guidelines](https://www.golem.network/uig) and [Privacy Policy](https://www.golem.network/privacy).
+
+## Legal Statements
+
+“Jupyter” and the Jupyter logos are trademarks or registered trademarks of NumFOCUS.
