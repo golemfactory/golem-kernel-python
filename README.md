@@ -2,7 +2,7 @@
 
 ## About
 
-Jupyter on Golem is a JupyterLab Python kernel (https://jupyterlab.readthedocs.io), which enables you to run your Python Notebooks using resources available on decentralized Golem Network (https://www.golem.network/). Providers of such resources are compensated for their work with GLM tokens.
+Jupyter on Golem is a Python kernel, which integrates with JupyterLab (https://jupyterlab.readthedocs.io) and enables it to run your Python Notebooks using resources available on decentralized Golem Network (https://www.golem.network/). Providers of such resources are compensated for their work with GLM tokens.
 
 JupyterLab is an open-source project that is widely used by data scientists, analysts, researchers and developers. It allows you to create and share Notebooks - documents that combine code, equations, visualisations and narrative text. JupyterLab is part of Project Jupyter, umbrella project born from IPython Project (https://ipython.org/) and centered around providing tools for interactive computing with computational notebooks. Find more about Jupyter Project: https://jupyter.org/
 
@@ -229,7 +229,7 @@ Did You try Jupyter on Golem? We would love to get to know your thoughts! Please
 ## Support
 
 If you experience problems with Jupyter on Golem, You can try to get some help in the following places:
-* **jupyter-on-golem** channel on our Golem Network [Discord Server](https://chat.golem.network/)
+* **jupyter-on-golem-discussion** channel on our Golem Network [Discord Server](https://chat.golem.network/)
 * [Github Repository](https://github.com/golemfactory/golem-kernel-python) of the project
 
 ## Known Issues
