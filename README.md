@@ -209,7 +209,7 @@ As a result Your link should look simillarly to the one below:
 
 DO NOT USE THIS LINK! THIS IS EXAMPLE ONLY! `https://golemfactory.github.io/onboarding_production/?yagnaAddress=0x0000000000000000000000000000000000000000` DO NOT USE THIS LINK! THIS IS EXAMPLE ONLY!
 
-Put the link with Your Jupyter on Golem wallet in Your browser address bar and follow the instructions presented there.
+Put the link with Your Jupyter on Golem wallet in Your browser address bar and follow the instructions presented there. To have minimal yet comfortable amount of tokens for trying out Golem Network it is recommended to spent around 10 EUR for Matic tokens and swap around 70% of them into GLM tokens. Onboarding Portal will help You out with that steps.
 
 After the last step is completed, You should have Your GLM and Matic tokens on Yagna Wallet. You can verify that by running again `%status` command under Jupyter on Golem Notebook. Now You should be able to create allocation (e.g.`%budget polygon 2`) and connect to Mainnet Providers.
 
