@@ -53,7 +53,7 @@ Jupyter on Golem needs some prerequsites. Please make sure you have the followin
     However, We are aware that for some people Blockchain might be a little bit tricky at the start. That is why we have prepared two example scenarios of using Jupyter on Golem. One of them does not require from You any prior ownership of GLM tokens and is perfect for a first try!
     
     *   **Testnet (Goerli) - For Blockchain newbies**: This example will be performed on Testnet and as a result will not require from You any prior Blockchain knowledge. Testnet still needs tokens to pay providers but those will be given via `%fund` command. Nevertheless, You need to take into account that Testnet is for testing purposes. In other words it might be unstable from time to time and offers smaller amount of providers with less powerful equipment.
-    *   **Mainnet (Polygon) - For Blockchain pros**: This one assumes that You are familliar with Blockchain and are fully capable of obtaining GLM + Matic tokens on your own. Mainnet is more stable and offers more powerful providers.
+    *   **Mainnet (Polygon) - For Blockchain pros**: This one assumes that You are familliar with Blockchain and are fully capable of obtaining GLM + Matic tokens on your own. Mainnet is more stable and offers more powerful providers. Check [Mainnet](#mainnet) section of this document to get help with obtaining GLM and Matic tokens for Jupyter on Golem.  
 
     Both scenarios are linked in [Examples](#examples) section of this document.
 
@@ -196,6 +196,22 @@ For instance, to add some colors to Your notebook You can install colorama packa
 ```
 %pip install colorama
 ```
+
+## Mainnet
+
+To easily onboard yourself into Polygon Mainnet, You can use our "Onboarding Portal". However, please keep in mind that it is currently in the Technical Beta stage. Consequently, It should be functional but some issues migh still be present.
+
+To use our "Onboarding Portal" You first need to identify Your Yagna Wallet Address. Fortunately it can be easily done with `%status` command run under Jupyter on Golem Notebook. Command will present You **My wallet address** value. Copy that value into clipboard and paste it into <PUT_HERE_YOUR_JUPYTER_ON_GOLEM_WALLET_ADDRESS> in the link below:
+
+`https://golemfactory.github.io/onboarding_production/?yagnaAddress=<PUT_HERE_YOUR_JUPYTER_ON_GOLEM_WALLET_ADDRESS>`
+
+As a result Your link should look simillarly to the one below:
+
+DO NOT USE THIS LINK! THIS IS EXAMPLE ONLY! `https://golemfactory.github.io/onboarding_production/?yagnaAddress=0x0000000000000000000000000000000000000000` DO NOT USE THIS LINK! THIS IS EXAMPLE ONLY!
+
+Put the link with Your Jupyter on Golem wallet in Your browser address bar and follow the instructions presented there.
+
+After the last step is completed, You should have Your GLM and Matic tokens on Yagna Wallet. You can verify that by running again `%status` command under Jupyter on Golem Notebook. Now You should be able to create allocation (e.g.`%budget polygon 2`) and connect to Mainnet Providers.
 
 ## Examples
 
