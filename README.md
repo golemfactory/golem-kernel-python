@@ -199,7 +199,19 @@ For instance, to add some colors to Your notebook You can install colorama packa
 
 ## Mainnet
 
-TODO
+To easily onboard yourself into Polygon Mainnet, You can use our "Onboarding Portal". However, please keep in mind that it is currently in the Technical Beta stage. Consequently, It should be functional but some issues migh still be present.
+
+To use our "Onboarding Portal" You first need to identify Your Yagna Wallet Address. Fortunately it can be easily done with `%status` command run under Jupyter on Golem Notebook. Command will present You **My wallet address** value. Copy that value into clipboard and paste it into <PUT_HERE_YOUR_JUPYTER_ON_GOLEM_WALLET_ADDRESS> in the link below:
+
+`https://golemfactory.github.io/onboarding_production/?yagnaAddress=<PUT_HERE_YOUR_JUPYTER_ON_GOLEM_WALLET_ADDRESS>`
+
+As a result Your link should look simillarly to the one below:
+
+DO NOT USE THIS LINK! THIS IS EXAMPLE ONLY! `https://golemfactory.github.io/onboarding_production/?yagnaAddress=0x0000000000000000000000000000000000000000` DO NOT USE THIS LINK! THIS IS EXAMPLE ONLY!
+
+Put the link with Your Jupyter on Golem wallet in Your browser address bar and follow the instructions presented there.
+
+After the last step is completed, You should have Your GLM and Matic tokens on Yagna Wallet. You can verify that by running again `%status` command under Jupyter on Golem Notebook. Now You should be able to create allocation (e.g.`%budget polygon 2`) and connect to Mainnet Providers.
 
 ## Examples
 
