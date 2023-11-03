@@ -53,7 +53,7 @@ Jupyter on Golem needs some prerequsites. Please make sure you have the followin
     However, We are aware that for some people Blockchain might be a little bit tricky at the start. That is why we have prepared two example scenarios of using Jupyter on Golem. One of them does not require from You any prior ownership of GLM tokens and is perfect for a first try!
     
     *   **Testnet (Goerli) - For Blockchain newbies**: This example will be performed on Testnet and as a result will not require from You any prior Blockchain knowledge. Testnet still needs tokens to pay providers but those will be given via `%fund` command. Nevertheless, You need to take into account that Testnet is for testing purposes. In other words it might be unstable from time to time and offers smaller amount of providers with less powerful equipment.
-    *   **Mainnet (Polygon) - For Blockchain pros**: This one assumes that You are familliar with Blockchain and are fully capable of obtaining GLM + Matic tokens on your own. Mainnet is more stable and offers more powerful providers.
+    *   **Mainnet (Polygon) - For Blockchain pros**: This one assumes that You are familliar with Blockchain and are fully capable of obtaining GLM + Matic tokens on your own. Mainnet is more stable and offers more powerful providers. Check [Mainnet](#mainnet) section of this document to get help with obtaining GLM and Matic tokens for Jupyter on Golem.  
 
     Both scenarios are linked in [Examples](#examples) section of this document.
 
@@ -196,6 +196,10 @@ For instance, to add some colors to Your notebook You can install colorama packa
 ```
 %pip install colorama
 ```
+
+## Mainnet
+
+TODO
 
 ## Examples
 
