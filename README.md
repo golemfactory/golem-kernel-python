@@ -2,6 +2,9 @@
 
 ## About
 
+> [!WARNING]
+> At this time, further development of Jupyter on Golem project has been put on hold.
+
 Jupyter on Golem is a Python kernel, which integrates with JupyterLab (https://jupyterlab.readthedocs.io) and enables it to run your Python Notebooks using resources available on decentralized Golem Network (https://www.golem.network/). Providers of such resources are compensated for their work with GLM tokens.
 
 JupyterLab is an open-source project that is widely used by data scientists, analysts, researchers and developers. It allows you to create and share Notebooks - documents that combine code, equations, visualisations and narrative text. JupyterLab is part of Project Jupyter, umbrella project born from IPython Project (https://ipython.org/) and centered around providing tools for interactive computing with computational notebooks. Find more about Jupyter Project: https://jupyter.org/
